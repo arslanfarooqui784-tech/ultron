@@ -1,0 +1,20 @@
+# Secrets — never commit
+ai_keys.txt
+fish_api_key.txt
+ultron_lock.json
+ultron_phone_token.txt
+*.jks
+*.jks.pass
+*.keystore
+
+# Personal data and logs
+ultron_log.txt
+ultron_shared_memory.json
+ultron_memory*.json
+
+# Build output
+android/build/
+android/gen/
+*.apk
+*.aab
+__pycache__/
