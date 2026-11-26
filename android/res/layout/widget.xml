@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="#E6080A0E">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/w_icon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@mipmap/ic_launcher" />
+        <TextView
+            android:id="@+id/w_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="8dp"
+            android:text="ULTRON"
+            android:textColor="#FF4452"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.2" />
+        <TextView
+            android:id="@+id/w_talk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#33FF1728"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:text="🎙 TALK"
+            android:textColor="#FF4452"
+            android:textSize="12sp" />
+    </LinearLayout>
+    <TextView
+        android:id="@+id/w_line1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:text="Messages: -"
+        android:textColor="#ECEFF3"
+        android:textSize="13sp" />
+    <TextView
+        android:id="@+id/w_line2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="3dp"
+        android:text=""
+        android:textColor="#C9CED6"
+        android:textSize="12sp" />
+    <TextView
+        android:id="@+id/w_line3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="3dp"
+        android:text=""
+        android:textColor="#8A919C"
+        android:textSize="12sp" />
+</LinearLayout>

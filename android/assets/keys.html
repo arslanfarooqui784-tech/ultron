@@ -1,0 +1,112 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&display=swap"><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 45%,#12060a,#030405 70%);color:#C9CED6;font-family:'Share Tech Mono',monospace}
+.box{width:min(440px,92vw);padding:30px 24px;border:1px solid rgba(255,23,40,.45);background:rgba(6,7,10,.88);clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);text-align:center;box-sizing:border-box}
+h1{margin:0 0 6px;font-family:'Orbitron',sans-serif;font-size:30px;letter-spacing:.4em;margin-right:-.4em;color:#ECEFF3}
+p.sub{margin:0 0 22px;font-size:11px;letter-spacing:.28em;color:#FF4452}
+label{display:block;text-align:left;font-size:11px;letter-spacing:.2em;color:#8A919C;margin:14px 0 8px}
+input,textarea{width:100%;box-sizing:border-box;padding:12px 14px;background:#07080b;border:1px solid rgba(150,160,175,.25);color:#E6E9EE;font-family:inherit;font-size:15px;outline:none}
+input{height:46px;letter-spacing:.15em}
+textarea{height:130px;font-size:13px;resize:vertical}
+input:focus,textarea:focus{border-color:#FF1728}
+button{margin-top:16px;width:100%;height:46px;border:1px solid rgba(255,23,40,.6);background:rgba(255,23,40,.12);color:#FF4452;font-family:inherit;font-size:13px;letter-spacing:.25em;cursor:pointer}
+button.ghost{background:transparent;border-color:rgba(150,160,175,.3);color:#8A919C}
+#msg{min-height:18px;margin-top:14px;font-size:12px;letter-spacing:.1em;color:#FF4452}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#FF1728;box-shadow:0 0 10px #FF1728;margin-right:8px;vertical-align:1px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 0;border-bottom:1px solid rgba(150,160,175,.12);font-size:13px}
+.row b{display:block;color:#ECEFF3;font-weight:normal;letter-spacing:.08em}
+.row small{color:#8A919C;font-size:11px}
+.row button{width:auto;margin:0;height:34px;padding:0 12px;font-size:11px;letter-spacing:.15em;flex:none}
+.ok{color:#3DDC84}.no{color:#FF4452}
+.note{font-size:11px;color:#8A919C;text-align:left;line-height:1.6;margin-top:14px}
+.switch{position:relative;width:46px;height:24px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#1a1d22;border:1px solid rgba(150,160,175,.3);transition:.2s}
+.switch span:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#8A919C;transition:.2s}
+.switch input:checked+span{background:rgba(255,23,40,.25);border-color:#FF1728}
+.switch input:checked+span:before{transform:translateX(22px);background:#FF4452}
+.big{font-size:15px!important;letter-spacing:.12em}
+.logrow{text-align:left;font-size:12px;padding:10px 0;border-bottom:1px solid rgba(150,160,175,.12);line-height:1.5}
+.logrow i{color:#8A919C;font-style:normal;font-size:11px}
+.box.wide{max-height:none;margin:20px 0}
+body.scroll{align-items:flex-start}
+</style><script>(function () {
+  var n = 0, cbs = {}, srs = {}, utts = {};
+  window.__nativeDone = function (id, status, text) { var cb = cbs[id]; delete cbs[id]; if (cb) cb(status, text); };
+  function nativeCall(route, body) {
+    return new Promise(function (res) {
+      var id = 'c' + (++n);
+      cbs[id] = function (st, txt) { res({ st: st, txt: txt }); };
+      UltronNative.call(route, id, body || '{}');
+    });
+  }
+  window.ultronNative = nativeCall;
+  var NATIVE = ['/ask', '/speak', '/login', '/logout', '/health', '/keys', '/keysinfo', '/setupinfo', '/lockinfo', '/autoinfo', '/autosave', '/control', '/approve', '/reject', '/stop', '/clearhistory', '/memory', '/memadd', '/memedit', '/memdel', '/memsettings', '/memsummary', '/memwipe', '/memexport', '/memimport', '/contactrule', '/takeover', '/attentiondone', '/biounlock', '/plusinfo', '/plussave', '/routine', '/briefing', '/pcpair', '/pcunpair', '/pcsync', '/docpick', '/askbgloc'];
+  var realFetch = window.fetch.bind(window);
+  window.fetch = function (u, o) {
+    var url = typeof u === 'string' ? u : u.url;
+    var path = url.replace(/^https:\/\/ultron\.app/, '').split('?')[0];
+    if (NATIVE.indexOf(path) < 0) return realFetch(u, o);
+    return nativeCall(path, o && o.body ? String(o.body) : '{}').then(function (r) {
+      if (path === '/speak' && r.st === 200) {
+        var b = atob(JSON.parse(r.txt).b64), a = new Uint8Array(b.length);
+        for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
+        return new Response(a.buffer, { status: 200, headers: { 'Content-Type': 'audio/mpeg' } });
+      }
+      return new Response(r.txt, { status: r.st, headers: { 'Content-Type': 'application/json' } });
+    });
+  };
+  // Phone microphone (Android speech recognition)
+  function SR() { this.lang = 'en-IN'; this.onresult = null; this.onerror = null; this.onend = null; }
+  SR.prototype.start = function () { var id = 's' + (++n); srs[id] = this; UltronNative.listen(id, this.lang || 'en-IN'); };
+  SR.prototype.abort = SR.prototype.stop = function () { UltronNative.stopListen(); };
+  window.__srEvent = function (id, type, text) {
+    var r = srs[id]; if (!r) return;
+    if (type === 'result' && r.onresult) r.onresult({ results: [[{ transcript: text, confidence: 0.9 }]] });
+    else if (type === 'error' && r.onerror) r.onerror({ error: text });
+    else if (type === 'end') { delete srs[id]; if (r.onend) r.onend(); }
+  };
+  window.SpeechRecognition = window.webkitSpeechRecognition = SR;
+  // Phone voice (Android text to speech) when ULTRON's own voice key is not set
+  function Utt(t) { this.text = t; this.pitch = 1; this.rate = 1; this.onstart = null; this.onend = null; }
+  window.__ttsEvent = function (id, type) {
+    var u = utts[id]; if (!u) return;
+    if (type === 'start' && u.onstart) u.onstart();
+    if (type === 'end') { delete utts[id]; if (u.onend) u.onend(); }
+  };
+  var synth = {
+    speak: function (u) { var id = 't' + (++n); utts[id] = u; UltronNative.tts(id, String(u.text), u.pitch || 1, u.rate || 1); },
+    cancel: function () { UltronNative.ttsStop(); utts = {}; }, speaking: false, pending: false
+  };
+  try { Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utt, configurable: true, writable: true }); } catch (e) { window.SpeechSynthesisUtterance = Utt; }
+  try { Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true }); } catch (e) {}
+})();</script><title>ULTRON keys</title></head><body>
+<div class="box">
+<h1>KEYS</h1>
+<p class="sub"><span class="dot"></span>CONNECT ULTRON'S BRAINS</p>
+<div class="note">Connected now: <span id="have" class="ok">checking...</span><br>Voice: <span id="voice">checking...</span></div>
+<label for="keys">AI KEYS · PASTE ONE PER LINE</label>
+<textarea id="keys" placeholder="Paste your Gemini key, OpenRouter key and any others here" autocomplete="off" spellcheck="false"></textarea>
+<div class="note">Saving replaces the keys stored before. Keys stay only inside this app on your phone.</div>
+<label for="fish">ULTRON VOICE KEY (FISH AUDIO, OPTIONAL)</label>
+<input id="fish" type="password" placeholder="leave empty to keep the current one" autocomplete="off">
+<button id="save">SAVE</button>
+<button class="ghost" id="back">BACK TO ULTRON</button>
+<div id="msg" role="status"></div>
+</div>
+<script>
+function show(j) {
+  document.getElementById('have').textContent = j.brains || 'none yet';
+  document.getElementById('have').className = j.brains ? 'ok' : 'no';
+  document.getElementById('voice').textContent = j.voice ? 'ULTRON voice' : 'phone voice (add a Fish Audio key for ULTRON voice)';
+}
+fetch('/keysinfo', {method: 'POST', body: '{}'}).then(function (r) { return r.json(); }).then(show);
+document.getElementById('save').onclick = async function () {
+  var k = document.getElementById('keys').value.trim(), f = document.getElementById('fish').value.trim();
+  var body = {fish: f};
+  if (k) body.keys = k;
+  var r = await fetch('/keys', {method: 'POST', body: JSON.stringify(body)});
+  var j = await r.json(); show(j);
+  document.getElementById('keys').value = ''; document.getElementById('fish').value = '';
+  document.getElementById('msg').textContent = j.brains ? 'SAVED · BRAINS CONNECTED' : 'SAVED · NO KEY RECOGNISED';
+};
+document.getElementById('back').onclick = function () { location.href = '/'; };
+</script></body></html>

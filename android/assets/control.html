@@ -1,0 +1,266 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&display=swap"><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 45%,#12060a,#030405 70%);color:#C9CED6;font-family:'Share Tech Mono',monospace}
+.box{width:min(440px,92vw);padding:30px 24px;border:1px solid rgba(255,23,40,.45);background:rgba(6,7,10,.88);clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);text-align:center;box-sizing:border-box}
+h1{margin:0 0 6px;font-family:'Orbitron',sans-serif;font-size:30px;letter-spacing:.4em;margin-right:-.4em;color:#ECEFF3}
+p.sub{margin:0 0 22px;font-size:11px;letter-spacing:.28em;color:#FF4452}
+label{display:block;text-align:left;font-size:11px;letter-spacing:.2em;color:#8A919C;margin:14px 0 8px}
+input,textarea{width:100%;box-sizing:border-box;padding:12px 14px;background:#07080b;border:1px solid rgba(150,160,175,.25);color:#E6E9EE;font-family:inherit;font-size:15px;outline:none}
+input{height:46px;letter-spacing:.15em}
+textarea{height:130px;font-size:13px;resize:vertical}
+input:focus,textarea:focus{border-color:#FF1728}
+button{margin-top:16px;width:100%;height:46px;border:1px solid rgba(255,23,40,.6);background:rgba(255,23,40,.12);color:#FF4452;font-family:inherit;font-size:13px;letter-spacing:.25em;cursor:pointer}
+button.ghost{background:transparent;border-color:rgba(150,160,175,.3);color:#8A919C}
+#msg{min-height:18px;margin-top:14px;font-size:12px;letter-spacing:.1em;color:#FF4452}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#FF1728;box-shadow:0 0 10px #FF1728;margin-right:8px;vertical-align:1px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 0;border-bottom:1px solid rgba(150,160,175,.12);font-size:13px}
+.row b{display:block;color:#ECEFF3;font-weight:normal;letter-spacing:.08em}
+.row small{color:#8A919C;font-size:11px}
+.row button{width:auto;margin:0;height:34px;padding:0 12px;font-size:11px;letter-spacing:.15em;flex:none}
+.ok{color:#3DDC84}.no{color:#FF4452}
+.note{font-size:11px;color:#8A919C;text-align:left;line-height:1.6;margin-top:14px}
+.switch{position:relative;width:46px;height:24px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#1a1d22;border:1px solid rgba(150,160,175,.3);transition:.2s}
+.switch span:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#8A919C;transition:.2s}
+.switch input:checked+span{background:rgba(255,23,40,.25);border-color:#FF1728}
+.switch input:checked+span:before{transform:translateX(22px);background:#FF4452}
+.big{font-size:15px!important;letter-spacing:.12em}
+.logrow{text-align:left;font-size:12px;padding:10px 0;border-bottom:1px solid rgba(150,160,175,.12);line-height:1.5}
+.logrow i{color:#8A919C;font-style:normal;font-size:11px}
+.box.wide{max-height:none;margin:20px 0}
+body.scroll{align-items:flex-start}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 4px}
+.tile{border:1px solid rgba(150,160,175,.18);padding:10px;text-align:left;background:rgba(10,11,14,.7)}
+.tile small{display:block;font-size:10px;letter-spacing:.18em;color:#8A919C}
+.tile b{font-weight:normal;font-size:14px;color:#ECEFF3}
+.stop{height:58px;font-size:18px;letter-spacing:.4em;background:rgba(255,23,40,.85);color:#fff;border-color:#FF1728;box-shadow:0 0 22px rgba(255,23,40,.5)}
+.modes{display:flex;gap:6px;margin-top:6px}
+.modes button{margin:0;height:40px;font-size:11px;letter-spacing:.12em}
+.modes button.on{background:rgba(255,23,40,.85);color:#fff}
+.card{border:1px solid rgba(255,23,40,.4);padding:12px;margin:10px 0;text-align:left;font-size:13px;line-height:1.5}
+.card textarea{height:80px;margin-top:6px}
+.card .btns{display:flex;gap:6px}
+.card .btns button{margin-top:8px;height:38px;font-size:11px}
+.lvl3{border-color:#FFB020}
+h2{font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:.3em;color:#FF4452;text-align:left;margin:22px 0 6px}
+.item{text-align:left;font-size:12px;padding:8px 0;border-bottom:1px solid rgba(150,160,175,.1);line-height:1.45}
+.item i{color:#8A919C;font-style:normal;font-size:11px}
+.chip{display:inline-block;font-size:10px;padding:2px 6px;margin:3px 4px 0 0;border:1px solid rgba(150,160,175,.3);color:#8A919C}
+.chip.ok{border-color:#3DDC84}</style><script>(function () {
+  var n = 0, cbs = {}, srs = {}, utts = {};
+  window.__nativeDone = function (id, status, text) { var cb = cbs[id]; delete cbs[id]; if (cb) cb(status, text); };
+  function nativeCall(route, body) {
+    return new Promise(function (res) {
+      var id = 'c' + (++n);
+      cbs[id] = function (st, txt) { res({ st: st, txt: txt }); };
+      UltronNative.call(route, id, body || '{}');
+    });
+  }
+  window.ultronNative = nativeCall;
+  var NATIVE = ['/ask', '/speak', '/login', '/logout', '/health', '/keys', '/keysinfo', '/setupinfo', '/lockinfo', '/autoinfo', '/autosave', '/control', '/approve', '/reject', '/stop', '/clearhistory', '/memory', '/memadd', '/memedit', '/memdel', '/memsettings', '/memsummary', '/memwipe', '/memexport', '/memimport', '/contactrule', '/takeover', '/attentiondone', '/biounlock', '/plusinfo', '/plussave', '/routine', '/briefing', '/pcpair', '/pcunpair', '/pcsync', '/docpick', '/askbgloc'];
+  var realFetch = window.fetch.bind(window);
+  window.fetch = function (u, o) {
+    var url = typeof u === 'string' ? u : u.url;
+    var path = url.replace(/^https:\/\/ultron\.app/, '').split('?')[0];
+    if (NATIVE.indexOf(path) < 0) return realFetch(u, o);
+    return nativeCall(path, o && o.body ? String(o.body) : '{}').then(function (r) {
+      if (path === '/speak' && r.st === 200) {
+        var b = atob(JSON.parse(r.txt).b64), a = new Uint8Array(b.length);
+        for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
+        return new Response(a.buffer, { status: 200, headers: { 'Content-Type': 'audio/mpeg' } });
+      }
+      return new Response(r.txt, { status: r.st, headers: { 'Content-Type': 'application/json' } });
+    });
+  };
+  // Phone microphone (Android speech recognition)
+  function SR() { this.lang = 'en-IN'; this.onresult = null; this.onerror = null; this.onend = null; }
+  SR.prototype.start = function () { var id = 's' + (++n); srs[id] = this; UltronNative.listen(id, this.lang || 'en-IN'); };
+  SR.prototype.abort = SR.prototype.stop = function () { UltronNative.stopListen(); };
+  window.__srEvent = function (id, type, text) {
+    var r = srs[id]; if (!r) return;
+    if (type === 'result' && r.onresult) r.onresult({ results: [[{ transcript: text, confidence: 0.9 }]] });
+    else if (type === 'error' && r.onerror) r.onerror({ error: text });
+    else if (type === 'end') { delete srs[id]; if (r.onend) r.onend(); }
+  };
+  window.SpeechRecognition = window.webkitSpeechRecognition = SR;
+  // Phone voice (Android text to speech) when ULTRON's own voice key is not set
+  function Utt(t) { this.text = t; this.pitch = 1; this.rate = 1; this.onstart = null; this.onend = null; }
+  window.__ttsEvent = function (id, type) {
+    var u = utts[id]; if (!u) return;
+    if (type === 'start' && u.onstart) u.onstart();
+    if (type === 'end') { delete utts[id]; if (u.onend) u.onend(); }
+  };
+  var synth = {
+    speak: function (u) { var id = 't' + (++n); utts[id] = u; UltronNative.tts(id, String(u.text), u.pitch || 1, u.rate || 1); },
+    cancel: function () { UltronNative.ttsStop(); utts = {}; }, speaking: false, pending: false
+  };
+  try { Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utt, configurable: true, writable: true }); } catch (e) { window.SpeechSynthesisUtterance = Utt; }
+  try { Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true }); } catch (e) {}
+})();</script><title>ULTRON control center</title></head><body class="scroll">
+<div class="box wide">
+<h1>CONTROL</h1>
+<p class="sub"><span class="dot"></span><span id="status">ULTRON STATUS</span></p>
+<div class="grid">
+<div class="tile"><small>INTERNET</small><b id="t-net">...</b></div>
+<div class="tile"><small>BATTERY</small><b id="t-bat">...</b></div>
+<div class="tile"><small>BRAINS</small><b id="t-brain">...</b></div>
+<div class="tile"><small>NOTIFICATIONS</small><b id="t-notif">...</b></div>
+</div>
+<button class="stop" id="stop">STOP</button>
+<button class="ghost" onclick="location.href='calls.html'">📞 CALLS &amp; OWNER ALERTS</button>
+<div class="note">STOP immediately turns off every automatic reply and cancels everything waiting.</div>
+
+<h2>AUTOMATIC REPLIES</h2>
+<div class="modes"><button data-m="off">OFF</button><button data-m="manual">MANUAL</button><button data-m="approve">ASK ME</button><button data-m="auto">AUTO</button></div>
+<div class="note" id="mode-help"></div>
+
+<h2>WAITING FOR YOU</h2>
+<div id="pending"><div class="note">Nothing is waiting.</div></div>
+
+<h2>NEEDS YOU</h2>
+<div id="attention"><div class="note">Nothing needs you.</div></div>
+
+<h2>CONTACTS</h2>
+<div class="note">Choose how ULTRON treats each chat. TAKE OVER = ULTRON stays quiet there while you reply yourself.</div>
+<div id="contacts"><div class="note">Chats appear here after their first message.</div></div>
+
+<h2>MESSAGE LOG</h2>
+<div id="queue"><div class="note">No messages yet.</div></div>
+
+<h2>INCOMING</h2>
+<div id="notes"><div class="note">No notifications.</div></div>
+
+<h2>CONNECTED APPS</h2>
+<div id="apps" class="note">Apps appear here when they send a notification.</div>
+
+<h2>REPLY SETTINGS</h2>
+<div id="autoapps"></div>
+<label for="window">COLLECT MESSAGES FOR (SECONDS, MAX 15)</label>
+<input id="window" type="number" min="3" max="15">
+<label for="introMin">INTRODUCE AGAIN AFTER (MINUTES, MIN 5)</label>
+<input id="introMin" type="number" min="5">
+<label for="handoverMin">WHEN I REPLY MYSELF, STAY QUIET IN THAT CHAT FOR (MINUTES)</label>
+<input id="handoverMin" type="number" min="5">
+<label for="emoji">EMOJIS</label>
+<select id="emoji"><option value="normal">NATURAL (AT LEAST ONE, UP TO 3)</option><option value="light">LIGHT (EXACTLY ONE)</option><option value="none">NONE</option></select>
+<label>QUIET HOURS (APPROVAL ALERTS ARE SILENT; EMERGENCIES STILL RING)</label>
+<div class="grid"><input id="quietStart" type="time"><input id="quietEnd" type="time"></div>
+<div class="row"><div><b>Reply in all apps</b><small>On = every app with a reply button, including new ones. Off = only the apps below</small></div><label class="switch"><input type="checkbox" id="allApps"><span></span></label></div>
+<div class="row"><div><b>Same-language replies</b><small>Hindi gets Hindi (same script), Urdu gets Urdu, Hinglish gets Hinglish, English gets English</small></div><label class="switch"><input type="checkbox" id="sameLang"><span></span></label></div>
+<div class="row"><div><b>Reply to every message, even "Okay", "Hmm", "Good night" or an emoji</b><small>Off = ULTRON may skip short closings (real questions are always answered)</small></div><label class="switch"><input type="checkbox" id="every"><span></span></label></div>
+<div class="row"><div><b>Group chats</b><small>Off = only one-to-one chats</small></div><label class="switch"><input type="checkbox" id="groups"><span></span></label></div>
+<label for="style">HOW ULTRON SHOULD SOUND</label>
+<textarea id="style"></textarea>
+<label for="about">INFORMATION ULTRON MAY SHARE ABOUT YOU</label>
+<textarea id="about" placeholder="Example: Arsh usually replies in the evening. For work, people can email him."></textarea>
+<button id="save">SAVE SETTINGS</button>
+
+<h2>ACTIVITY HISTORY</h2>
+<div id="history"><div class="note">Nothing yet.</div></div>
+<button class="ghost" id="clear">CLEAR HISTORY</button>
+<button class="ghost" onclick="location.href='/'">BACK TO ULTRON</button>
+<div id="msg" role="status"></div>
+</div>
+<script>
+var last = null, pendingIds = '';
+function esc(t) { var d = document.createElement('div'); d.textContent = t == null ? '' : String(t); return d.innerHTML; }
+function ago(ms) { var s = Math.round((Date.now() - ms) / 1000); return s < 60 ? 'now' : s < 3600 ? Math.round(s / 60) + ' min ago' : Math.round(s / 3600) + ' h ago'; }
+function post(route, body) { return fetch(route, {method: 'POST', body: JSON.stringify(body || {})}).then(function (r) { return r.json(); }); }
+var HELP = {off: 'OFF: ULTRON only acts when you ask it. Messages are still recorded.', manual: 'MANUAL: ULTRON records every message for you and never replies.', approve: 'ASK ME FIRST: ULTRON drafts every reply and waits for your approval.',
+  auto: 'AUTOMATIC: ULTRON collects each sender\'s messages for up to 15 seconds, then sends ONE reply in their language, answering every message, even "Okay" or "Good night". Routine replies go by themselves. Personal, emotional, commitment, money or security messages get a safe "passed on to Arsh" reply and the full answer waits for you. Codes, banking, security alerts and promotions are never answered.'};
+function render(j, full) {
+  last = j;
+  document.getElementById('status').textContent = j.mode === 'off' ? 'ONLINE · AUTOMATIC REPLIES OFF' : j.mode === 'auto' ? 'ACTIVE · ANSWERING MESSAGES' : j.mode === 'manual' ? 'ACTIVE · RECORDING ONLY' : 'ACTIVE · DRAFTING FOR APPROVAL';
+  document.getElementById('t-net').textContent = j.online ? 'ONLINE' : 'OFFLINE';
+  document.getElementById('t-net').className = j.online ? 'ok' : 'no';
+  document.getElementById('t-bat').textContent = j.battery + '%';
+  document.getElementById('t-brain').textContent = j.brains || 'NO KEYS';
+  document.getElementById('t-notif').textContent = j.notif ? 'WATCHING' : 'NO ACCESS';
+  document.getElementById('t-notif').className = j.notif ? 'ok' : 'no';
+  document.querySelectorAll('[data-m]').forEach(function (b) { b.className = b.dataset.m === j.mode ? 'on' : ''; });
+  document.getElementById('mode-help').textContent = HELP[j.mode] || '';
+  var ids = j.pending.map(function (p) { return p.id; }).join(',');
+  if (ids !== pendingIds) {
+    pendingIds = ids;
+    document.getElementById('pending').innerHTML = j.pending.length ? j.pending.map(function (p) {
+      return '<div class="card' + (p.level >= 3 ? ' lvl3' : '') + '"><i>' + esc(p.app) + ' · ' + esc(p.who) + ' · ' + esc(ago(p.at)) +
+        (p.level >= 3 ? ' · RESTRICTED' : '') + '</i><br>They: ' + esc(p.got) + '<br><small class="note">Why: ' + esc(p.reason) + '</small>' +
+        '<textarea id="r' + p.id + '">' + esc(p.reply) + '</textarea><div class="btns">' +
+        '<button onclick="approve(' + p.id + ')">' + (p.level >= 3 ? 'SEND ANYWAY' : 'APPROVE') + '</button>' +
+        '<button class="ghost" onclick="reject(' + p.id + ')">REJECT</button></div></div>';
+    }).join('') : '<div class="note">Nothing is waiting.</div>';
+  }
+  var ST = {pending: 'PENDING / COLLECTING', processing: 'PROCESSING', sending: 'SENDING', replied: 'SENT', awaiting_approval: 'AWAITING APPROVAL',
+    skipped: 'NO REPLY REQUIRED', attention: 'NEEDS YOU', handover: 'OWNER HANDOVER', failed: 'FAILED', duplicate: 'DUPLICATE', ultron: 'ULTRON\'S OWN',
+    arsh: 'YOUR MESSAGE', history: 'OLD', completed: 'DONE', stopped: 'STOPPED'};
+  document.getElementById('attention').innerHTML = j.attention.length ? j.attention.map(function (e) {
+    return '<div class="card"><i>' + esc(e.app) + ' · ' + esc(e.who) + ' · ' + esc(ago(e.time || e.received)) + '</i><br>' + esc(e.text) +
+      '<br><small class="note">' + esc(e.note || '') + '</small><div class="btns"><button class="ghost" onclick="done(\'' + esc(e.id) + '\')">DONE</button></div></div>';
+  }).join('') : '<div class="note">Nothing needs you.</div>';
+  var cj = JSON.stringify(j.contacts);
+  if (cj !== window.__lastContacts) { window.__lastContacts = cj;
+  document.getElementById('contacts').innerHTML = j.contacts.length ? j.contacts.map(function (c) {
+    var opts = ['default', 'auto', 'approve', 'never'].map(function (r) {
+      var lab = {default: 'FOLLOW MODE', auto: 'ALWAYS AUTO', approve: 'ALWAYS ASK ME', never: 'NEVER REPLY'}[r];
+      return '<option value="' + r + '"' + (c.rule === r ? ' selected' : '') + '>' + lab + '</option>'; }).join('');
+    return '<div class="mem"><i>' + esc(c.app) + (c.handover ? ' · YOU ARE HANDLING IT' : '') + '</i><br><b>' + esc(c.who) + '</b>' +
+      '<select data-chat="' + esc(c.chat) + '">' + opts + '</select><div class="btns">' +
+      (c.handover ? '<button class="ghost" data-give="' + esc(c.chat) + '">LET ULTRON REPLY AGAIN</button>'
+                  : '<button class="ghost" data-take="' + esc(c.chat) + '">TAKE OVER (60 MIN)</button>') + '</div></div>';
+  }).join('') : '<div class="note">Chats appear here after their first message.</div>';
+  document.querySelectorAll('[data-chat]').forEach(function (sel) { sel.onchange = function () { post('/contactrule', {chat: sel.dataset.chat, rule: sel.value}).then(function () { say('RULE SAVED'); }); }; });
+  document.querySelectorAll('[data-take]').forEach(function (b) { b.onclick = function () { post('/takeover', {chat: b.dataset.take, minutes: 60}).then(function () { load(); }); }; });
+  document.querySelectorAll('[data-give]').forEach(function (b) { b.onclick = function () { post('/takeover', {chat: b.dataset.give, minutes: 0}).then(function () { load(); }); }; });
+  }
+  document.getElementById('queue').innerHTML = j.queue.length ? j.queue.slice(0, 40).map(function (e) {
+    return '<div class="item"><i>' + esc(ago(e.time || e.received)) + ' · ' + esc(e.app) + ' · ' + esc(e.who) + ' · <span class="' +
+      (e.status === 'replied' ? 'ok' : (e.status === 'attention' || e.status === 'failed') ? 'no' : '') + '">' + esc(ST[e.status] || e.status) + (e.status === 'replied' ? (e.delivery === 'confirmed' ? ' · CONFIRMED IN CHAT' : ' · DELIVERY UNCONFIRMED') : '') +
+      (e.ctype && e.ctype !== 'text' ? ' · ' + esc(e.ctype.toUpperCase()) : '') + (e.media === 'inaccessible' ? ' · CONTENT INACCESSIBLE' : e.media === 'seen' ? ' · IMAGE SEEN' : '') + '</span></i><br>' +
+      esc(e.sender && e.sender !== e.who ? e.sender + ': ' : '') + esc(e.text) + (e.reply ? '<br><span class="ok">ULTRON:</span> ' + esc(e.reply) : '') +
+      (e.note ? '<br><small class="note">' + esc(e.note) + '</small>' : '') + '</div>';
+  }).join('') : '<div class="note">No messages yet.</div>';
+  document.getElementById('notes').innerHTML = j.notes.length ? j.notes.map(function (n) {
+    return '<div class="item"><i>' + esc(n.app) + ' · ' + esc(ago(n.at)) + (n.canReply ? '' : ' · read only') + '</i><br><b>' + esc(n.who) + ':</b> ' + esc(n.text) + '</div>';
+  }).join('') : '<div class="note">No notifications.</div>';
+  document.getElementById('apps').innerHTML = j.apps.length ? j.apps.map(function (a) {
+    return '<span class="chip' + (a.reply ? ' ok' : '') + '">' + esc(a.name) + (a.reply ? ' · CAN REPLY' : ' · READ ONLY') + '</span>';
+  }).join('') : 'Apps appear here when they send a notification.';
+  document.getElementById('history').innerHTML = j.activity.length ? j.activity.slice(0, 60).map(function (e) {
+    return '<div class="item"><i>' + esc(new Date(e.t).toLocaleString()) + ' · ' + esc(String(e.kind).toUpperCase()) + '</i><br>' + esc(e.text) + '</div>';
+  }).join('') : '<div class="note">Nothing yet.</div>';
+  if (full) {
+    document.getElementById('autoapps').innerHTML = j.autoApps.map(function (a) {
+      return '<div class="row"><div><b>' + esc(a.name) + '</b></div><label class="switch"><input type="checkbox" data-pkg="' + esc(a.pkg) + '"' + (a.on ? ' checked' : '') + '><span></span></label></div>';
+    }).join('');
+    document.getElementById('groups').checked = j.groups;
+    document.getElementById('every').checked = j.every;
+    document.getElementById('sameLang').checked = j.sameLang;
+    document.getElementById('window').value = j.window;
+    document.getElementById('introMin').value = j.introMin;
+    document.getElementById('handoverMin').value = j.handoverMin;
+    document.getElementById('emoji').value = j.emoji;
+    document.getElementById('quietStart').value = j.quietStart;
+    document.getElementById('quietEnd').value = j.quietEnd;
+    document.getElementById('allApps').checked = j.allApps;
+    document.getElementById('style').value = j.style;
+    document.getElementById('about').value = j.about;
+  }
+}
+function load(full) { post('/control').then(function (j) { render(j, full); }); }
+function say(t) { document.getElementById('msg').textContent = t; }
+function approve(id) { var t = document.getElementById('r' + id).value; post('/approve', {id: id, text: t}).then(function (j) { say(j.result); pendingIds = null; load(); }); }
+function done(id) { post('/attentiondone', {id: id}).then(function () { load(); }); }
+function reject(id) { post('/reject', {id: id}).then(function (j) { say(j.result); pendingIds = null; load(); }); }
+document.getElementById('stop').onclick = function () { post('/stop').then(function (j) { say(j.result); pendingIds = null; load(); }); };
+document.querySelectorAll('[data-m]').forEach(function (b) { b.onclick = function () { post('/autosave', {mode: b.dataset.m}).then(function () { load(); }); }; });
+document.getElementById('save').onclick = function () {
+  var apps = []; document.querySelectorAll('[data-pkg]').forEach(function (c) { if (c.checked) apps.push(c.dataset.pkg); });
+  post('/autosave', {apps: apps, groups: document.getElementById('groups').checked, every: document.getElementById('every').checked, sameLang: document.getElementById('sameLang').checked, allApps: document.getElementById('allApps').checked,
+    window: +document.getElementById('window').value, introMin: +document.getElementById('introMin').value,
+    handoverMin: +document.getElementById('handoverMin').value, emoji: document.getElementById('emoji').value,
+    quietStart: document.getElementById('quietStart').value, quietEnd: document.getElementById('quietEnd').value,
+    style: document.getElementById('style').value,
+    about: document.getElementById('about').value}).then(function () { say('SAVED'); load(true); });
+};
+document.getElementById('clear').onclick = function () { post('/clearhistory').then(function () { load(); }); };
+load(true); setInterval(load, 4000); window.__ultronResume = function () { load(); };
+</script></body></html>

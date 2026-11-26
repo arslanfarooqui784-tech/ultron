@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="en">
+<head><script>(function () {
+  var n = 0, cbs = {}, srs = {}, utts = {};
+  window.__nativeDone = function (id, status, text) { var cb = cbs[id]; delete cbs[id]; if (cb) cb(status, text); };
+  function nativeCall(route, body) {
+    return new Promise(function (res) {
+      var id = 'c' + (++n);
+      cbs[id] = function (st, txt) { res({ st: st, txt: txt }); };
+      UltronNative.call(route, id, body || '{}');
+    });
+  }
+  window.ultronNative = nativeCall;
+  var NATIVE = ['/ask', '/speak', '/login', '/logout', '/health', '/keys', '/keysinfo', '/setupinfo', '/lockinfo', '/autoinfo', '/autosave', '/control', '/approve', '/reject', '/stop', '/clearhistory', '/memory', '/memadd', '/memedit', '/memdel', '/memsettings', '/memsummary', '/memwipe', '/memexport', '/memimport', '/contactrule', '/takeover', '/attentiondone', '/biounlock', '/plusinfo', '/plussave', '/routine', '/briefing', '/pcpair', '/pcunpair', '/pcsync', '/docpick', '/askbgloc'];
+  var realFetch = window.fetch.bind(window);
+  window.fetch = function (u, o) {
+    var url = typeof u === 'string' ? u : u.url;
+    var path = url.replace(/^https:\/\/ultron\.app/, '').split('?')[0];
+    if (NATIVE.indexOf(path) < 0) return realFetch(u, o);
+    return nativeCall(path, o && o.body ? String(o.body) : '{}').then(function (r) {
+      if (path === '/speak' && r.st === 200) {
+        var b = atob(JSON.parse(r.txt).b64), a = new Uint8Array(b.length);
+        for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
+        return new Response(a.buffer, { status: 200, headers: { 'Content-Type': 'audio/mpeg' } });
+      }
+      return new Response(r.txt, { status: r.st, headers: { 'Content-Type': 'application/json' } });
+    });
+  };
+  // Phone microphone (Android speech recognition)
+  function SR() { this.lang = 'en-IN'; this.onresult = null; this.onerror = null; this.onend = null; }
+  SR.prototype.start = function () { var id = 's' + (++n); srs[id] = this; if (this.quiet && UltronNative.listenQuiet) UltronNative.listenQuiet(id, this.lang || 'en-IN'); else UltronNative.listen(id, this.lang || 'en-IN'); };
+  SR.prototype.abort = SR.prototype.stop = function () { UltronNative.stopListen(); };
+  window.__srEvent = function (id, type, text) {
+    var r = srs[id]; if (!r) return;
+    if (type === 'result' && r.onresult) r.onresult({ results: [[{ transcript: text, confidence: 0.9 }]] });
+    else if (type === 'error' && r.onerror) r.onerror({ error: text });
+    else if (type === 'end') { delete srs[id]; if (r.onend) r.onend(); }
+  };
+  window.SpeechRecognition = window.webkitSpeechRecognition = SR;
+  // Phone voice (Android text to speech) when ULTRON's own voice key is not set
+  function Utt(t) { this.text = t; this.pitch = 1; this.rate = 1; this.onstart = null; this.onend = null; }
+  window.__ttsEvent = function (id, type) {
+    var u = utts[id]; if (!u) return;
+    if (type === 'start' && u.onstart) u.onstart();
+    if (type === 'end') { delete utts[id]; if (u.onend) u.onend(); }
+  };
+  var synth = {
+    speak: function (u) { var id = 't' + (++n); utts[id] = u; UltronNative.tts(id, String(u.text), u.pitch || 1, u.rate || 1); },
+    cancel: function () { UltronNative.ttsStop(); utts = {}; }, speaking: false, pending: false
+  };
+  try { Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utt, configurable: true, writable: true }); } catch (e) { window.SpeechSynthesisUtterance = Utt; }
+  try { Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true }); } catch (e) {}
+})();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ULTRON</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&amp;family=Share+Tech+Mono&amp;family=Rajdhani:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#030405}
+.u-root{--amp:.1}
+.u-root.m-idle{--amp:.09}
+.u-root.m-listen{--amp:.6}
+.u-root.m-think{--amp:.22}
+.u-root.m-speak{--amp:1}
+.mono{font-family:'Share Tech Mono',monospace}
+.u-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(150,160,175,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(150,160,175,.05) 1px,transparent 1px);background-size:48px 48px;-webkit-mask-image:radial-gradient(ellipse at 50% 46%,#000 0%,rgba(0,0,0,.35) 38%,transparent 70%);mask-image:radial-gradient(ellipse at 50% 46%,#000 0%,rgba(0,0,0,.35) 38%,transparent 70%)}
+.u-scan{position:absolute;inset:0;pointer-events:none;z-index:6;background:repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
+.u-scanbar{position:absolute;left:0;right:0;height:120px;pointer-events:none;z-index:6;background:linear-gradient(180deg,transparent,rgba(255,23,40,.035),transparent);animation:u-scanbar 7s linear infinite}
+@keyframes u-scanbar{0%{top:-120px}100%{top:100%}}
+.u-vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 28%,rgba(0,0,0,.8) 100%)}
+.u-particle{position:absolute;border-radius:50%;background:#c9d1dc;pointer-events:none;animation:u-drift linear infinite}
+.u-particle.r{background:#FF1728;box-shadow:0 0 6px #FF1728}
+@keyframes u-drift{0%{transform:translate3d(0,0,0);opacity:0}12%{opacity:var(--o)}88%{opacity:var(--o)}100%{transform:translate3d(var(--dx),-140px,0);opacity:0}}
+.u-sweep{position:absolute;top:0;left:0;width:22%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,23,40,.9),transparent);animation:u-sweep 9s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes u-sweep{0%{transform:translateX(-100%)}60%,100%{transform:translateX(560%)}}
+.u-title{position:relative}
+.u-title::before,.u-title::after{content:'ULTRON';position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;pointer-events:none}
+.u-title::before{color:#FF1728;clip-path:inset(18% 0 52% 0);animation:u-tg1 6.5s steps(1) infinite}
+.u-title::after{color:#9aa3ae;clip-path:inset(58% 0 12% 0);animation:u-tg2 6.5s steps(1) infinite}
+@keyframes u-tg1{0%,93%{opacity:0;transform:none}94%{opacity:.9;transform:translateX(-4px)}95.5%{opacity:.7;transform:translateX(3px)}97%,100%{opacity:0;transform:none}}
+@keyframes u-tg2{0%,94%{opacity:0;transform:none}95%{opacity:.6;transform:translateX(5px)}96.5%,100%{opacity:0;transform:none}}
+.u-stage{position:relative;width:max(300px,min(580px,90vw,calc(100vh - 330px)));aspect-ratio:1/1}
+.u-spin{transform-box:view-box;transform-origin:300px 300px;animation:u-spin 240s linear infinite}
+.u-spin.rev{animation:u-spin 360s linear infinite reverse}
+.u-spin.fast{animation-duration:80s}
+.u-spin.text{animation-duration:140s}
+@keyframes u-spin{to{transform:rotate(360deg)}}
+.u-pulse{transform-box:fill-box;transform-origin:center;opacity:0}
+.m-think .u-pulse{animation:u-pulse 2.6s cubic-bezier(.2,.6,.3,1) infinite}
+.m-think .u-pulse.b{animation-delay:1.3s}
+@keyframes u-pulse{0%{transform:scale(.72);opacity:.55}100%{transform:scale(1.18);opacity:0}}
+.u-neural{opacity:0;transition:opacity 1.2s ease}
+.m-think .u-neural{opacity:1}
+.u-neural line{stroke-dasharray:4 7;animation:u-flow 3s linear infinite}
+@keyframes u-flow{to{stroke-dashoffset:-44}}
+.u-neural circle{animation:u-node 2.2s ease-in-out infinite}
+@keyframes u-node{0%,100%{opacity:.25}50%{opacity:1}}
+.u-glitch{position:absolute;inset:0;animation:u-glitch 8s steps(1) infinite}
+@keyframes u-glitch{0%,90%{transform:none;filter:none}91%{transform:translateX(-4px) skewX(-1deg);filter:drop-shadow(3px 0 0 rgba(255,23,40,.55))}92%{transform:translateX(3px);filter:drop-shadow(-3px 0 0 rgba(160,170,184,.4))}93%{transform:none;filter:none}96%{transform:translateX(2px);filter:drop-shadow(2px 0 0 rgba(255,23,40,.4))}97%,100%{transform:none;filter:none}}
+@keyframes u-float{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,-51.2%)}}
+.u-eyeglow{opacity:.55;transition:opacity .9s ease;animation:u-breathe 6s ease-in-out infinite}
+.m-listen .u-eyeglow{opacity:1}
+.m-think .u-eyeglow{opacity:.8}
+.m-speak .u-eyeglow{opacity:.9}
+@keyframes u-breathe{0%,100%{filter:brightness(1)}50%{filter:brightness(1.3)}}
+@keyframes u-speakglow{0%,100%{opacity:.32}50%{opacity:.6}}
+.u-circuit{stroke-dasharray:6 5;animation:u-flow 4s linear infinite;opacity:.45;transition:opacity .8s}
+.m-think .u-circuit,.m-speak .u-circuit{opacity:1;animation-duration:1.4s}
+.u-underglow{position:absolute;left:50%;bottom:4%;width:44%;height:8%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(255,23,40,.24),rgba(122,0,16,.08) 45%,transparent 70%);filter:blur(8px);pointer-events:none}
+.u-brk{animation:u-brk 3.2s ease-in-out infinite}
+@keyframes u-brk{0%,100%{opacity:.5}50%{opacity:1}}
+.u-stream{position:absolute;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,transparent,#000 14%,#000 82%,transparent);mask-image:linear-gradient(180deg,transparent,#000 14%,#000 82%,transparent)}
+.u-streamin{display:flex;flex-direction:column;gap:5px;animation:u-stream 70s linear infinite}
+.m-think .u-streamin{animation-duration:18s}
+@keyframes u-stream{to{transform:translateY(-50%)}}
+.u-ln{white-space:nowrap;font-size:11px;letter-spacing:.06em;color:#6c7480}
+.u-ln.hl{color:#FF4452}
+.u-ln.br{color:#aab2bd}
+.u-cursor{display:inline-block;width:7px;height:12px;margin-left:4px;background:#FF1728;vertical-align:-2px;animation:u-blink 1s steps(1) infinite}
+.u-wave{display:flex;align-items:center;justify-content:center;gap:3px;height:52px;width:min(560px,86vw)}
+.u-bar{flex:0 0 2px;height:52px;border-radius:2px;background:linear-gradient(180deg,transparent,#FF1728 30%,#FF1728 70%,transparent);transform:scaleY(.06);animation:u-wv 1.6s ease-in-out infinite}
+.m-listen .u-bar{animation-duration:.9s}
+.m-think .u-bar{animation-duration:2.4s}
+.m-speak .u-bar{animation-duration:.5s}
+@keyframes u-wv{0%,100%{transform:scaleY(calc(var(--lo) * var(--amp) + .04))}50%{transform:scaleY(calc(var(--hi) * var(--amp) + .04))}}
+.u-dot{width:6px;height:6px;border-radius:50%;background:#FF1728;box-shadow:0 0 8px #FF1728;animation:u-blink2 2.8s ease-in-out infinite}
+@keyframes u-blink2{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes u-blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+.u-bar-in{transition:border-color .6s ease,box-shadow .6s ease}
+.m-listen .u-bar-in{border-color:rgba(255,23,40,.6)!important;box-shadow:0 0 0 1px rgba(255,23,40,.12),0 0 40px rgba(255,23,40,.14)}
+.u-input{flex:1 1 auto;min-width:0;background:transparent;border:0;outline:0;color:#E6E9EE;font-family:'Share Tech Mono',monospace;font-size:16px;letter-spacing:.06em;height:44px;caret-color:#FF1728}
+.u-input::placeholder{color:#8A919C;letter-spacing:.1em}
+.u-mic{position:relative;flex:0 0 auto;width:44px;height:44px;border-radius:4px;border:1px solid rgba(255,23,40,.4);background:rgba(255,23,40,.07);color:#FF1728;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .4s}
+.u-mic:hover{background:rgba(255,23,40,.16)}
+.u-ripple{position:absolute;inset:-1px;border-radius:4px;border:1px solid rgba(255,23,40,.6);opacity:0;pointer-events:none}
+.m-listen .u-ripple{animation:u-ripple 2s ease-out infinite}
+.m-listen .u-ripple.b{animation-delay:1s}
+@keyframes u-ripple{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.8);opacity:0}}
+.u-send{flex:0 0 auto;height:44px;padding:0 16px;border-radius:4px;border:1px solid rgba(150,160,175,.24);background:transparent;color:#C9CED6;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.24em;cursor:pointer}
+.u-send:hover{border-color:rgba(255,23,40,.55);color:#fff}
+.u-seg{height:30px;padding:0 12px;border:0;border-radius:3px;background:transparent;color:#8A919C;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.2em;cursor:pointer;transition:color .3s,background .3s}
+.u-seg:hover{color:#E6E9EE}
+.u-seg.on{background:rgba(255,23,40,.14);color:#FF4452}
+.u-gauge{transform-box:fill-box;transform-origin:center;animation:u-spin 18s linear infinite}
+.m-think .u-gauge{animation-duration:3s}
+.m-speak .u-gauge{animation-duration:6s}
+.u-side{position:absolute;z-index:3}
+.u-head{position:absolute;left:50%;top:50%;width:62%;aspect-ratio:70/80;transform:translate(-50%,-50%);animation:u-float 12s ease-in-out infinite}
+.u-faceimg{position:absolute;inset:0;width:100%;height:100%;display:block;filter:drop-shadow(0 30px 40px rgba(0,0,0,.85))}
+.u-facefx{position:absolute;inset:0;pointer-events:none;-webkit-mask-image:url(face/facemask.png);mask-image:url(face/facemask.png);-webkit-mask-size:100% 100%;mask-size:100% 100%}
+.u-facegrid{position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,rgba(190,200,214,.07) 0 1px,transparent 1px 9px);mix-blend-mode:screen}
+.u-facescan{position:absolute;left:0;right:0;height:14%;background:linear-gradient(180deg,transparent,rgba(255,23,40,.16) 80%,rgba(255,68,82,.55));animation:u-facescan2 5.5s linear infinite;mix-blend-mode:screen}
+@keyframes u-facescan2{0%{top:-15%}100%{top:100%}}
+.u-faceinner{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 48%,rgba(255,23,40,.35),transparent 60%);mix-blend-mode:screen;opacity:.15;transition:opacity 1.2s}
+.m-think .u-faceinner{opacity:.4}
+.m-speak .u-faceinner{animation:u-speakglow 1.1s ease-in-out infinite}
+.u-head .u-eyeglow{position:absolute;width:13%;height:4%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(255,80,92,.95),rgba(255,23,40,.5) 40%,transparent 70%);filter:blur(6px);mix-blend-mode:screen;pointer-events:none}
+.u-optic{opacity:.35;transition:opacity .9s}
+.m-listen .u-optic,.m-think .u-optic{opacity:1}
+.u-holo{border:1px solid rgba(255,23,40,.38);background:linear-gradient(135deg,rgba(255,23,40,.07),rgba(5,6,8,.78) 45%);clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);box-shadow:inset 0 0 30px rgba(255,23,40,.06);backdrop-filter:blur(6px)}
+.u-radar{position:relative;flex:0 0 auto;width:110px;height:110px;border-radius:50%;border:1px solid rgba(255,23,40,.45);background:repeating-radial-gradient(circle,transparent 0 17px,rgba(255,23,40,.18) 17px 18px),linear-gradient(rgba(255,23,40,.18),rgba(255,23,40,.18)) center/1px 100% no-repeat,linear-gradient(90deg,rgba(255,23,40,.18),rgba(255,23,40,.18)) center/100% 1px no-repeat;overflow:hidden}
+.u-radar::after{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(255,23,40,.55),rgba(255,23,40,0) 70deg,transparent 360deg);animation:u-spin 3.6s linear infinite}
+.u-blip{position:absolute;width:5px;height:5px;border-radius:50%;background:#FF4452;box-shadow:0 0 8px #FF1728;animation:u-blipa 3.6s ease-out infinite}
+@keyframes u-blipa{0%{opacity:1}70%,100%{opacity:.1}}
+.u-meter{position:absolute;left:0;top:0;bottom:0;background:#FF1728;box-shadow:0 0 8px #FF1728}
+.u-sig{display:flex;align-items:flex-end;gap:3px;height:34px}
+.u-sigbar{flex:1 1 0;background:linear-gradient(180deg,#FF4452,rgba(122,0,16,.6));transform-origin:bottom;animation:u-sigb 1.8s ease-in-out infinite}
+.m-speak .u-sigbar,.m-listen .u-sigbar{animation-duration:.6s}
+@keyframes u-sigb{0%,100%{transform:scaleY(var(--a))}50%{transform:scaleY(var(--b))}}
+.u-layer{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity 60ms linear;pointer-events:none}
+.u-layer.on{opacity:1}
+.u-tilt{position:absolute;inset:0;transition:transform 1.4s cubic-bezier(.3,.7,.3,1)}
+.m-listen .u-tilt{transform:rotate(-1.8deg) translateY(-2px)}
+.m-think .u-tilt{transform:rotate(1.1deg) translateY(-4px)}
+.m-speak .u-tilt{animation:u-nod 3.2s ease-in-out infinite}
+@keyframes u-nod{0%,100%{transform:rotate(0) translateY(0)}30%{transform:rotate(.7deg) translateY(1px)}65%{transform:rotate(-.5deg) translateY(-1px)}}
+.u-head.is-blink .u-eyeglow{opacity:0!important;transition:opacity 50ms}
+.u-head.is-squint .u-eyeglow{height:2.6%}
+.m-think .u-head .u-eyeglow{animation:u-glance 4.2s ease-in-out infinite}
+@keyframes u-glance{0%,100%{margin-left:0}30%,45%{margin-left:-.6%}65%,80%{margin-left:.6%}}
+@media (max-width:1180px){.u-side{display:none}}
+@media (max-width:640px){.u-corner{display:none}}
+</style>
+</head>
+<body>
+<div id="root" class="u-root m-idle" style="position: relative; width: 100%; min-height: 100vh; overflow: hidden; background: radial-gradient(ellipse at 50% 44%, #0f1217 0%, #07080b 42%, #030405 78%); color: #C9CED6; font-family: 'Rajdhani', sans-serif">
+  <div class="u-grid"></div>
+  <div style="position: absolute; inset: 0; pointer-events: none"><template id="t-particles"></template></div>
+  <div class="u-vignette"></div>
+  <div class="u-scan"></div>
+  <div class="u-scanbar"></div>
+  <div style="position: absolute; left: 32px; right: 32px; top: 24px; height: 1px; background: rgba(150,160,175,.10); overflow: hidden; z-index: 3"><div class="u-sweep"></div></div>
+  <div style="position: absolute; left: 32px; right: 32px; bottom: 24px; height: 1px; background: rgba(150,160,175,.08); z-index: 3"></div>
+
+  <div class="u-corner mono" style="position: absolute; top: 40px; left: 40px; z-index: 4; display: flex; flex-direction: column; gap: 6px; font-size: 11px; letter-spacing: .2em; color: #8A919C">
+    <span><span style="color: #FF4452">root@ultron</span>:~# core --status</span>
+    <span style="color: #6c7480">LOCAL <span data-b="now"></span> · IST</span>
+  </div>
+  <div class="u-corner" style="position: absolute; top: 34px; right: 36px; z-index: 4; display: flex; gap: 2px; padding: 3px; border: 1px solid rgba(150,160,175,.16); border-radius: 4px; background: rgba(9,11,15,.7)"><template id="t-modes"></template></div>
+  <div class="u-corner mono" style="position: absolute; bottom: 36px; left: 40px; z-index: 4; font-size: 11px; letter-spacing: .24em; color: #8A919C">CREATOR // ARSH</div>
+  <div class="u-corner mono" style="position: absolute; bottom: 36px; right: 40px; z-index: 4; font-size: 11px; letter-spacing: .24em; color: #8A919C">PERSONAL INTELLIGENCE SYSTEM</div>
+
+  <div class="u-side u-holo mono" style="left: 40px; top: 104px; width: 300px; padding: 18px 20px 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; justify-content: space-between; font-size: 10px; letter-spacing: .26em; color: #8A919C"><span>SCAN // PERIMETER</span><span style="color: #FF4452">LIVE</span></div>
+    <div style="display: flex; gap: 18px; align-items: center">
+      <div class="u-radar">
+        <span class="u-blip" style="left: 64%; top: 30%"></span>
+        <span class="u-blip" style="left: 28%; top: 62%; animation-delay: 1.4s"></span>
+        <span class="u-blip" style="left: 70%; top: 72%; animation-delay: 2.6s"></span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 10px; letter-spacing: .22em; color: #8A919C">NEURAL CORE</span><span style="font-size: 13px; letter-spacing: .16em; color: #ECEFF3">STABLE</span></div>
+        <div style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 10px; letter-spacing: .22em; color: #8A919C">VOICE CHANNEL</span><span style="font-size: 13px; letter-spacing: .16em; color: #ECEFF3" data-b="channel"></span></div>
+        <div style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 10px; letter-spacing: .22em; color: #8A919C">ACCESS</span><span style="font-size: 13px; letter-spacing: .16em; color: #ECEFF3">OWNER · ARSH</span></div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; justify-content: space-between; font-size: 10px; letter-spacing: .22em; color: #8A919C"><span>MEMORY</span><span style="color: #ECEFF3">PERSISTENT</span></div>
+      <div style="height: 3px; background: rgba(200,208,220,.1); position: relative; overflow: hidden"><span class="u-meter" style="width: 78%"></span></div>
+    </div>
+  </div>
+
+  <div class="u-side u-holo mono" style="left: 40px; bottom: 72px; width: 340px">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid rgba(150,160,175,.12); font-size: 10px; letter-spacing: .24em; color: #8A919C"><span>ULTRON://TERMINAL</span><span style="color: #FF4452">LIVE</span></div>
+    <div style="display: flex; flex-direction: column; gap: 5px; padding: 10px 12px 12px; min-height: 150px; justify-content: flex-end">
+      <template id="t-log"></template>
+      <div style="font-size: 11px; color: #FF4452">&gt;<span class="u-cursor"></span></div>
+    </div>
+  </div>
+
+  <div class="u-side u-holo mono" style="right: 40px; top: 104px; width: 290px; padding: 18px 20px 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; justify-content: space-between; font-size: 10px; letter-spacing: .26em; color: #8A919C"><span>COGNITION</span><span style="color: #FF4452" data-b="modeLabel"></span></div>
+    <div style="display: flex; align-items: center; gap: 18px">
+      <svg width="96" height="96" viewBox="0 0 112 112">
+        <circle cx="56" cy="56" r="52" fill="none" stroke="rgba(150,160,175,.16)" stroke-width="1"></circle>
+        <circle cx="56" cy="56" r="46" fill="none" stroke="rgba(255,23,40,.35)" stroke-width="4" stroke-dasharray="1 3.8"></circle>
+        <g class="u-gauge"><circle cx="56" cy="56" r="52" fill="none" stroke="#FF1728" stroke-width="2" stroke-dasharray="46 281" stroke-linecap="round"></circle></g>
+        <circle cx="56" cy="56" r="4" fill="#FF1728"></circle>
+        <circle cx="56" cy="56" r="12" fill="none" stroke="rgba(255,23,40,.45)" stroke-width="1"></circle>
+      </svg>
+      <div style="display: flex; flex-direction: column; gap: 6px; flex: 1 1 auto">
+        <span style="font-size: 10px; letter-spacing: .22em; color: #8A919C">SIGNAL</span>
+        <div class="u-sig"><template id="t-sig"></template></div>
+        <span style="font-size: 10px; letter-spacing: .22em; color: #8A919C">LINK · ENCRYPTED</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="u-side u-stream mono" style="right: 52px; top: 300px; bottom: 80px; width: 270px"><div class="u-streamin"><template id="t-code"></template></div></div>
+
+  <main style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 40px 24px 56px; box-sizing: border-box">
+    <header style="display: flex; flex-direction: column; align-items: center; gap: 12px">
+      <h1 class="u-title" style="margin: 0; margin-right: -.5em; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 36px; letter-spacing: .5em; color: #ECEFF3; text-shadow: 0 0 24px rgba(255,23,40,.25)">ULTRON</h1>
+      <div style="display: flex; align-items: center; gap: 14px">
+        <span style="width: 40px; height: 1px; background: linear-gradient(90deg, transparent, #FF1728)"></span>
+        <span class="mono" style="font-size: 11px; letter-spacing: .4em; color: #8A919C">ADVANCED ARTIFICIAL INTELLIGENCE</span>
+        <span style="width: 40px; height: 1px; background: linear-gradient(90deg, #FF1728, transparent)"></span>
+      </div>
+    </header>
+
+    <div style="flex: 1 1 auto; display: flex; align-items: center; justify-content: center; width: 100%">
+      <div class="u-stage">
+        <svg viewBox="0 0 600 600" style="position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible">
+          <defs>
+            <radialGradient id="uHalo" cx="50%" cy="48%" r="50%">
+              <stop offset="0%" stop-color="#FF1728" stop-opacity=".2"></stop>
+              <stop offset="40%" stop-color="#7A0010" stop-opacity=".08"></stop>
+              <stop offset="72%" stop-color="#030405" stop-opacity="0"></stop>
+            </radialGradient>
+            <filter id="uLineGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.4"></feGaussianBlur></filter>
+            <path id="uTextRing" d="M300,300 m-226,0 a226,226 0 1,1 452,0 a226,226 0 1,1 -452,0"></path>
+          </defs>
+          <circle cx="300" cy="292" r="280" fill="url(#uHalo)"></circle>
+          <g class="u-spin">
+            <circle cx="300" cy="300" r="288" fill="none" stroke="rgba(255,23,40,.38)" stroke-width="8" stroke-dasharray="1.2 13.88"></circle>
+            <circle cx="300" cy="300" r="290" fill="none" stroke="rgba(255,90,100,.85)" stroke-width="14" stroke-dasharray="2.4 148.4"></circle>
+          </g>
+          <circle cx="300" cy="300" r="276" fill="none" stroke="rgba(200,208,220,.16)" stroke-width="1"></circle>
+          <circle cx="300" cy="300" r="306" fill="none" stroke="#FF1728" stroke-width="2" stroke-dasharray="60 420.6" transform="rotate(39.4 300 300)" class="u-brk"></circle>
+          <g class="u-spin rev"><circle cx="300" cy="300" r="258" fill="none" stroke="#FF1728" stroke-opacity=".55" stroke-width="3" stroke-dasharray="220 40 60 40 120 40 300 40 180 40 360 181"></circle></g>
+          <g class="u-spin fast">
+            <circle cx="300" cy="300" r="246" fill="none" stroke="#ff6b75" stroke-width="5" stroke-dasharray="90 1456" filter="url(#uLineGlow)"></circle>
+            <circle cx="300" cy="300" r="246" fill="none" stroke="#ffd0d4" stroke-width="1.4" stroke-dasharray="90 1456"></circle>
+          </g>
+          <g class="u-spin text"><text font-family="Share Tech Mono, monospace" font-size="9" letter-spacing="3" fill="rgba(255,23,40,.5)"><textPath href="#uTextRing">01010101 · ULTRON.CORE::NEURAL_LINK ESTABLISHED · 0x7F·3A·C2·19 · VOICE.AUTH(ARSH) VERIFIED · MEMORY.PERSIST=TRUE · 11001010 · VISION.TRACK ACTIVE · ENCRYPT AES-256 ·</textPath></text></g>
+          <g font-family="Share Tech Mono, monospace" font-size="10" letter-spacing="2" fill="rgba(210,218,228,.7)" text-anchor="middle">
+            <text x="300" y="-14">000</text><text x="626" y="304">090</text><text x="300" y="624">180</text><text x="-26" y="304">270</text>
+          </g>
+          <g fill="#FF1728">
+            <path d="M300 22 L294 10 L306 10 Z"></path><path d="M300 578 L294 590 L306 590 Z"></path>
+            <path d="M22 300 L10 294 L10 306 Z"></path><path d="M578 300 L590 294 L590 306 Z"></path>
+          </g>
+          <g fill="none" stroke="rgba(255,68,82,.7)" stroke-width="1">
+            <path d="M110 110 L66 66 L-30 66"></path><path d="M490 110 L534 66 L630 66"></path>
+            <path d="M110 490 L66 534 L-30 534"></path><path d="M490 490 L534 534 L630 534"></path>
+          </g>
+          <g font-family="Share Tech Mono, monospace" letter-spacing="2">
+            <text x="-30" y="58" font-size="9" fill="rgba(170,178,189,.85)">OPTICS</text>
+            <text x="-30" y="82" font-size="12" fill="#ECEFF3">LOCKED</text>
+            <text x="630" y="58" font-size="9" fill="rgba(170,178,189,.85)" text-anchor="end">VOICE PRINT</text>
+            <text x="630" y="82" font-size="12" fill="#ECEFF3" text-anchor="end">ARSH · VERIFIED</text>
+            <text x="-30" y="526" font-size="9" fill="rgba(170,178,189,.85)">CORE TEMP</text>
+            <text x="-30" y="550" font-size="12" fill="#ECEFF3">NOMINAL</text>
+            <text x="630" y="526" font-size="9" fill="rgba(170,178,189,.85)" text-anchor="end">COGNITION</text>
+            <text x="630" y="550" font-size="12" fill="#FF4452" text-anchor="end" data-b="modeLabel"></text>
+          </g>
+          <circle class="u-pulse" cx="300" cy="300" r="230" fill="none" stroke="#FF1728" stroke-width="1.2"></circle>
+          <circle class="u-pulse b" cx="300" cy="300" r="230" fill="none" stroke="#FF1728" stroke-width="1.2"></circle>
+          <g class="u-neural" stroke="rgba(255,23,40,.5)" stroke-width=".8" fill="#FF1728">
+            <line x1="80" y1="210" x2="140" y2="150"></line><line x1="140" y1="150" x2="104" y2="300"></line>
+            <line x1="104" y1="300" x2="76" y2="390"></line><line x1="104" y1="300" x2="150" y2="430"></line>
+            <line x1="520" y1="210" x2="460" y2="150"></line><line x1="460" y1="150" x2="496" y2="300"></line>
+            <line x1="496" y1="300" x2="524" y2="390"></line><line x1="496" y1="300" x2="450" y2="430"></line>
+            <circle cx="80" cy="210" r="2.4"></circle><circle cx="140" cy="150" r="2.8"></circle><circle cx="104" cy="300" r="2.4"></circle>
+            <circle cx="520" cy="210" r="2.4"></circle><circle cx="460" cy="150" r="2.8"></circle><circle cx="496" cy="300" r="2.4"></circle>
+          </g>
+        </svg>
+        <div class="u-underglow"></div>
+        <div class="u-glitch"><div class="u-tilt"><div id="head" class="u-head">
+          <img class="u-faceimg" src="face/base.png" alt="ULTRON face">
+          <img class="u-layer" data-layer="squintOn" src="face/squint.png" alt="">
+          <img class="u-layer" data-layer="blinkOn" src="face/blink.png" alt="">
+          <img class="u-layer" data-layer="mA" src="face/mouth-a.png" alt="">
+          <img class="u-layer" data-layer="mE" src="face/mouth-e.png" alt="">
+          <img class="u-layer" data-layer="mO" src="face/mouth-o.png" alt="">
+          <img class="u-layer" data-layer="mI" src="face/mouth-i.png" alt="">
+          <div class="u-facefx"><div class="u-facegrid"></div><div class="u-facescan"></div><div class="u-faceinner"></div></div>
+          <span class="u-eyeglow" style="left: 38.3%; top: 52.4%"></span>
+          <span class="u-eyeglow" style="left: 64%; top: 52.6%"></span>
+          <svg viewBox="0 0 700 800" style="position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible">
+            <g fill="none" stroke="rgba(190,200,214,.22)" stroke-width="1.2">
+              <path d="M355 236 L355 342"></path><path d="M236 302 C292 272 418 272 474 302"></path>
+              <path d="M222 328 L254 382 L226 468"></path><path d="M488 328 L456 382 L484 468"></path>
+              <path d="M214 472 C258 456 306 458 334 472"></path><path d="M496 472 C452 456 404 458 376 472"></path>
+            </g>
+            <g fill="none" stroke="#FF1728" stroke-width="1.3">
+              <path class="u-circuit" d="M355 252 L355 300 L388 318 L430 318"></path>
+              <path class="u-circuit" d="M355 300 L322 318 L280 318"></path>
+            </g>
+            <g class="u-optic" fill="none" stroke="rgba(255,68,82,.55)" stroke-width="1">
+              <circle cx="268" cy="419" r="30" stroke-dasharray="3 5"></circle>
+              <circle cx="448" cy="421" r="30" stroke-dasharray="3 5"></circle>
+            </g>
+            <g>
+              <circle cx="150" cy="500" r="20" fill="#07080b" fill-opacity=".85" stroke="rgba(190,200,214,.35)" stroke-width="1"></circle>
+              <circle cx="150" cy="500" r="3" fill="#FF1728"></circle>
+              <circle cx="566" cy="496" r="20" fill="#050608" fill-opacity=".9" stroke="rgba(190,200,214,.22)" stroke-width="1"></circle>
+              <circle cx="566" cy="496" r="3" fill="#FF1728"></circle>
+            </g>
+            <text x="268" y="372" text-anchor="middle" font-family="Share Tech Mono, monospace" font-size="10" letter-spacing="2" fill="rgba(200,208,220,.6)">L-OPTIC</text>
+            <text x="448" y="372" text-anchor="middle" font-family="Share Tech Mono, monospace" font-size="10" letter-spacing="2" fill="rgba(200,208,220,.6)">R-OPTIC</text>
+          </svg>
+        </div></div></div>
+      </div>
+    </div>
+
+    <div class="u-wave"><template id="t-bars"></template></div>
+    <div class="mono" style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 12px">
+      <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; letter-spacing: .3em; color: #C9CED6">
+        <span class="u-dot"></span><span>SYSTEM ONLINE</span><span style="width: 3px; height: 3px; border-radius: 50%; background: #5f6672"></span><span>INTELLIGENCE ACTIVE</span>
+      </div>
+      <div style="font-size: 11px; letter-spacing: .34em; color: #FF4452">// <span data-b="modeLabel"></span></div>
+    </div>
+    <div style="width: min(660px, 100%); margin-top: 22px">
+      <div class="u-bar-in" style="display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 18px; border: 1px solid rgba(150,160,175,.2); border-radius: 6px; background: rgba(6,7,10,.8)">
+        <span class="mono" style="font-size: 15px; color: #FF1728">&gt;_</span>
+        <input id="ultron-cmd" class="u-input" type="text" autocomplete="off" placeholder="Command ULTRON..." aria-label="Command ULTRON">
+        <button type="button" class="u-send" id="send">EXECUTE</button>
+        <button type="button" class="u-mic" id="mic" aria-label="Start listening">
+          <span class="u-ripple"></span><span class="u-ripple b"></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path></svg>
+        </button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (q) { return document.querySelector(q); };
+  var root = $('#root'), head = $('#head');
+  var S = { mode: 'idle', blink: false, vis: '', log: [] };
+  var timers = [], lipTimer = null, srcNode = null, ac = null, rec = null;
+  var LABELS = { idle: 'STANDING BY', listen: 'LISTENING', think: 'ANALYZING', speak: 'RESPONDING' };
+  var CHANNELS = { idle: 'ARMED', listen: 'OPEN', think: 'HOLD', speak: 'TRANSMITTING' };
+
+  function el(tag, cls, style, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (style) for (var k in style) { if (k.indexOf('--') === 0) e.style.setProperty(k, style[k]); else e.style[k] = style[k]; }
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function fill(id, nodes) {
+    var t = document.getElementById(id);
+    var parent = t.parentNode;
+    nodes.forEach(function (n) { parent.insertBefore(n, t); });
+    t.remove();
+  }
+
+  (function build() {
+    var parts = [];
+    for (var i = 0; i < 42; i++) {
+      var r = function (k) { return Math.abs(Math.sin((i + 1) * k)); };
+      var red = i % 9 === 0, size = red ? 2 : 1 + r(7.1) * 1.4;
+      parts.push(el('span', red ? 'u-particle r' : 'u-particle', {
+        left: (r(12.9) * 100).toFixed(2) + '%', top: (10 + r(78.2) * 85).toFixed(2) + '%',
+        width: size.toFixed(1) + 'px', height: size.toFixed(1) + 'px',
+        animationDuration: (22 + r(3.3) * 26).toFixed(1) + 's', animationDelay: (-r(5.9) * 40).toFixed(1) + 's',
+        '--o': (red ? 0.7 : 0.15 + r(9.4) * 0.35).toFixed(2), '--dx': ((r(2.2) - 0.5) * 60).toFixed(0) + 'px'
+      }));
+    }
+    fill('t-particles', parts);
+    var bars = [], n = 72;
+    for (var j = 0; j < n; j++) {
+      var x = (j - (n - 1) / 2) / ((n - 1) / 2);
+      var env = Math.pow(Math.cos(x * Math.PI / 2), 1.6);
+      var hi = Math.max(0.08, env * (0.55 + 0.45 * Math.abs(Math.sin(j * 12.9898))));
+      var lo = hi * (0.15 + 0.2 * Math.abs(Math.sin(j * 3.7)));
+      bars.push(el('span', 'u-bar', { '--hi': hi.toFixed(3), '--lo': lo.toFixed(3), animationDelay: (-(j * 0.083 % 1.6)).toFixed(2) + 's', opacity: (0.35 + 0.65 * env).toFixed(2) }));
+    }
+    fill('t-bars', bars);
+    var sig = [];
+    for (var q = 0; q < 16; q++) {
+      var a = 0.25 + 0.5 * Math.abs(Math.sin(q * 1.7));
+      var b = Math.min(1, a + 0.2 + 0.3 * Math.abs(Math.cos(q * 2.3)));
+      sig.push(el('span', 'u-sigbar', { '--a': a.toFixed(2), '--b': b.toFixed(2), height: '100%', animationDelay: (-(q * 0.13)).toFixed(2) + 's' }));
+    }
+    fill('t-sig', sig);
+    var src = [
+      ['$ ultron --boot --secure', 'u-ln br'], ['  loading kernel ............ ok', 'u-ln'],
+      ['  mount /memory/persistent .. ok', 'u-ln'], ['  neural.mesh(layers=128) ... ok', 'u-ln'],
+      ['>> 0x7F3A  C2 19 FF 17 28 00 A1', 'u-ln'], ['import core.vision as eye', 'u-ln br'],
+      ['eye.track(target="ARSH")', 'u-ln'], ['voice.auth(owner) => VERIFIED', 'u-ln hl'],
+      ['  encrypt: AES-256-GCM', 'u-ln'], ['  handshake: device.desktop', 'u-ln'],
+      ['def think(query):', 'u-ln br'], ['    ctx = memory.recall(query)', 'u-ln'],
+      ['    plan = reason(ctx, depth=9)', 'u-ln'], ['    return act(plan)', 'u-ln'],
+      ['[sec] firewall ......... ARMED', 'u-ln hl'], ['[net] uplink ........... STABLE', 'u-ln'],
+      ['while system.online:', 'u-ln br'], ['    listen(); think(); respond()', 'u-ln'],
+      ['ULTRON::CORE ready', 'u-ln hl']
+    ];
+    fill('t-code', src.concat(src).map(function (l) { return el('div', l[1], null, l[0]); }));
+    fill('t-modes', ['idle', 'listen', 'think', 'speak'].map(function (m) {
+      var btn = el('button', 'u-seg', null, m.toUpperCase());
+      btn.type = 'button';
+      btn.dataset.mode = m;
+      btn.addEventListener('click', function () {
+        primeAudio();
+        setMode(m);
+        if (m === 'speak') say('ULTRON online. All systems are operational, Arsh.');
+        if (m === 'listen') startListening();
+      });
+      return btn;
+    }));
+    var logAnchor = document.getElementById('t-log');
+    S.logBox = logAnchor.parentNode;
+    S.logAnchor = el('span');
+    S.logBox.insertBefore(S.logAnchor, logAnchor);
+    logAnchor.remove();
+  })();
+
+  function render() {
+    root.className = 'u-root m-' + S.mode;
+    var lid = S.blink ? 'is-blink' : (S.mode === 'think' ? 'is-squint' : '');
+    head.className = 'u-head' + (lid ? ' ' + lid : '');
+    var layers = { blinkOn: S.blink, squintOn: !S.blink && S.mode === 'think', mA: S.vis === 'a', mE: S.vis === 'e', mO: S.vis === 'o', mI: S.vis === 'i' };
+    document.querySelectorAll('[data-layer]').forEach(function (img) { img.classList.toggle('on', !!layers[img.dataset.layer]); });
+    document.querySelectorAll('[data-b="modeLabel"]').forEach(function (n) { n.textContent = LABELS[S.mode]; });
+    document.querySelectorAll('[data-b="channel"]').forEach(function (n) { n.textContent = CHANNELS[S.mode]; });
+    document.querySelectorAll('[data-mode]').forEach(function (b) { b.className = b.dataset.mode === S.mode ? 'u-seg on' : 'u-seg'; });
+  }
+  function stamp() {
+    var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
+    return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+  setInterval(function () { document.querySelectorAll('[data-b="now"]').forEach(function (n) { n.textContent = stamp(); }); }, 1000);
+  function addLog(text, cls) {
+    S.log.push({ t: stamp(), text: text, cls: cls || '' });
+    S.log = S.log.slice(-7);
+    S.logBox.querySelectorAll('.u-logline').forEach(function (n) { n.remove(); });
+    S.log.forEach(function (l) {
+      var row = el('div', 'u-logline', { fontSize: '11px', letterSpacing: '.04em', color: '#8A919C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' });
+      row.appendChild(el('span', null, { color: '#5c636e' }, '[' + l.t + '] '));
+      row.appendChild(el('span', l.cls === 'hl' ? 'u-ln hl' : l.cls === 'br' ? 'u-ln br' : 'u-ln', null, l.text));
+      S.logBox.insertBefore(row, S.logAnchor);
+    });
+  }
+  function later(ms, fn) { timers.push(setTimeout(fn, ms)); }
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  var MSG = { idle: ['STANDBY · ALL SYSTEMS NOMINAL', ''], listen: ['VOICE CHANNEL OPEN · LISTENING', 'hl'], think: ['PARSING INPUT · ROUTING TO NEURAL CORE', 'br'], speak: ['RESPONSE STREAM ACTIVE', 'hl'] };
+  function enter(m) { S.mode = m; addLog(MSG[m][0], MSG[m][1]); render(); }
+  function setMode(m) { clearTimers(); stopSpeech(); stopListening(); enter(m); }
+
+  function scheduleBlink() {
+    setTimeout(function () {
+      S.blink = true; render();
+      setTimeout(function () {
+        S.blink = false; render();
+        if (Math.random() < 0.18) {
+          setTimeout(function () { S.blink = true; render(); setTimeout(function () { S.blink = false; render(); scheduleBlink(); }, 110); }, 160);
+        } else scheduleBlink();
+      }, 120);
+    }, 2200 + Math.random() * 4200);
+  }
+
+  function primeAudio() {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!ac) ac = new AC();
+      if (ac.state === 'suspended') ac.resume();
+    } catch (e) {}
+  }
+  function setVis(v) { if (v !== S.vis) { S.vis = v; render(); } }
+  function stopSpeech() {
+    clearTimeout(lipTimer);
+    try { if (srcNode) { var n = srcNode; srcNode = null; n.stop(); } } catch (e) {}
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    setVis('');
+  }
+  function charVis(c) {
+    if (c === 'a') return 'a';
+    if ('eiy'.indexOf(c) >= 0) return c === 'i' ? 'i' : 'e';
+    if ('ouw'.indexOf(c) >= 0) return 'o';
+    if ('mbp .,!?;:-'.indexOf(c) >= 0) return '';
+    return Math.random() < 0.5 ? 'i' : 'e';
+  }
+  function say(text) {
+    stopSpeech();
+    addLog('VOICE › ' + text, '');
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      clearTimeout(lipTimer);
+      setVis('');
+      later(500, function () {
+        enter('idle');
+        // conversation mode: listen again straight away, no tapping
+        if (window.__convo) later(350, function () { if (S.mode === 'idle') { setMode('listen'); startListening(); } });
+      });
+    }
+    // only ULTRON's own deep voice, never silent: keep trying until it comes through
+    var myTurn = (window.__sayGen = (window.__sayGen || 0) + 1);
+    var tries = 0, waits = [0, 1200, 2500, 4000, 6000, 8000, 10000, 15000, 20000, 30000];
+    function attempt() {
+      if (myTurn !== window.__sayGen) return;
+      sayFish(text, finish).catch(function (err) {
+        tries++;
+        var em = String(err && err.message || err);
+        if (tries === 3) addLog(em === 'phone voice' ? 'ULTRON VOICE KEY MISSING · add it on the KEYS page' : 'WAITING FOR ULTRON VOICE · ' + em.slice(0, 50), 'br');
+        if (tries < waits.length && !done) later(waits[tries], attempt);
+        else finish();
+      });
+    }
+    attempt();
+  }
+  async function sayFish(text, finish) {
+    var r = await fetch('/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text }) });
+    if (!r.ok) {
+      var msg = 'HTTP ' + r.status;
+      try { msg = (await r.json()).error || msg; } catch (e) {}
+      throw new Error(msg);
+    }
+    var buf = await r.arrayBuffer();
+    primeAudio();
+    var audio = await ac.decodeAudioData(buf);
+    var src = ac.createBufferSource();
+    src.buffer = audio;
+    var an = ac.createAnalyser();
+    an.fftSize = 1024;
+    src.connect(an);
+    an.connect(ac.destination);
+    var data = new Float32Array(an.fftSize), flip = false;
+    srcNode = src;
+    (function loop() {
+      if (srcNode !== src) return;
+      an.getFloatTimeDomainData(data);
+      var sum = 0;
+      for (var k = 0; k < data.length; k++) sum += data[k] * data[k];
+      var rms = Math.sqrt(sum / data.length);
+      flip = !flip;
+      setVis(rms > 0.16 ? 'a' : rms > 0.09 ? (flip ? 'o' : 'e') : rms > 0.035 ? 'i' : '');
+      lipTimer = setTimeout(loop, 70);
+    })();
+    src.onended = function () { if (srcNode === src) { srcNode = null; finish(); } };
+    src.start();
+  }
+  function sayBrowser(text, finish) {
+    var chars = text.toLowerCase(), i = 0, started = false;
+    function step() {
+      started = true;
+      if (i >= chars.length) { setVis(''); return; }
+      setVis(charVis(chars[i++]));
+      lipTimer = setTimeout(step, 64);
+    }
+    try {
+      var u = new SpeechSynthesisUtterance(text);
+      u.pitch = 0.55; u.rate = 0.95;
+      u.onstart = function () { if (!started) step(); };
+      u.onend = finish;
+      window.speechSynthesis.speak(u);
+      later(1200, function () { if (!started) step(); });
+      later(chars.length * 64 + 9000, finish);
+    } catch (e) {
+      step();
+      later(chars.length * 64 + 300, finish);
+    }
+  }
+
+  var CONVO_ON = /^(let'?s talk|let us talk|conversation mode( on)?|start (a )?conversation|talk to me|baat karo|chat mode( on)?)$/i;
+  var CONVO_OFF = /^(bye|goodbye|good bye|stop talking|conversation (mode )?off|end (the )?conversation|that'?s all|bas|ok bye|thank you,? that'?s all)$/i;
+  function respond(cmd) {
+    if (cmd && CONVO_ON.test(cmd.trim())) { window.__convo = true; window.__convoMiss = 0; setMode('speak'); say("Okay Arsh, I'm all ears. Just talk to me, no need to tap. Say bye when you're done."); return; }
+    if (cmd && window.__convo && CONVO_OFF.test(cmd.trim())) { window.__convo = false; setMode('speak'); say('Talk to you later, Arsh.'); return; }
+    if (window.__convo) window.__convoMiss = 0;
+    setMode('think');
+    var reply = cmd ? 'Command received. Processing: ' + cmd + '.' : 'I am listening, Arsh. Say a command.';
+    if (!cmd) { later(2400, function () { enter('speak'); say(reply); }); return; } var tok = window.__ultronAsk = (window.__ultronAsk || 0) + 1; addLog('NEURAL CORE · THINKING', 'br'); fetch('/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: cmd }) }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (x) { if (tok !== window.__ultronAsk) return; enter('speak'); if (x.ok && x.j.brain) addLog('BRAIN › ' + x.j.brain, 'hl'); if (x.ok && x.j.open && window.ultronOpen) window.ultronOpen(x.j.open); if (x.ok && x.j.show && window.ultronShow) window.ultronShow(x.j.show); say(x.ok ? x.j.reply : String(x.j.error || 'My brain is offline, Arsh.')); if (window.ultronMood) window.ultronMood(x.ok ? x.j.reply : 'failed'); }).catch(function () { if (tok !== window.__ultronAsk) return; enter('speak'); say('I cannot reach my brain right now, Arsh.'); });
+  }
+  function submit() {
+    var input = $('#ultron-cmd');
+    var c = (input.value || '').trim();
+    if (!c) return;
+    primeAudio();
+    input.value = '';
+    addLog('CMD › ' + c, 'br');
+    respond(c);
+  }
+
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  function stopListening() { if (rec) { var r = rec; rec = null; try { r.abort(); } catch (e) {} } }
+  function startListening() {
+    if (typeof wake !== 'undefined' && wake.rec) { var w = wake.rec; wake.rec = null; try { w.abort(); } catch (e) {} }
+    if (!SR) { addLog('MIC NOT SUPPORTED IN THIS BROWSER · USE CHROME', 'br'); later(2500, function () { respond(''); }); return; }
+    var r = new SR();
+    rec = r;
+    r.lang = 'en-IN';
+    r.interimResults = false;
+    var heard = false;
+    r.onresult = function (e) {
+      heard = true;
+      var t = e.results[0][0].transcript.trim();
+      rec = null;
+      addLog('HEARD › ' + t, 'br');
+      respond(t);
+    };
+    r.onerror = function (e) { if (rec === r) addLog('MIC · ' + String(e.error || 'error').toUpperCase(), 'br'); };
+    r.onend = function () {
+      if (rec === r) {
+        rec = null;
+        if (!heard) {
+          setMode('idle');
+          // conversation mode: two silences in a row end it
+          if (window.__convo) {
+            window.__convoMiss = (window.__convoMiss || 0) + 1;
+            if (window.__convoMiss >= 2) { window.__convo = false; addLog('CONVERSATION MODE OFF · SILENCE', 'hl'); }
+            else later(300, function () { if (S.mode === 'idle') { setMode('listen'); startListening(); } });
+          }
+        }
+      }
+    };
+    try { r.start(); } catch (e) { addLog('MIC COULD NOT START', 'br'); }
+  }
+
+  $('#send').addEventListener('click', submit);
+  $('#ultron-cmd').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+  $('#mic').addEventListener('click', function () {
+    primeAudio();
+    if (S.mode === 'listen') { setMode('idle'); return; }
+    setMode('listen');
+    startListening();
+  });
+
+  // ---- hooks used by the Android app (briefing, side key, wake word) ----
+  window.ultronSay = function (t) { primeAudio(); clearTimers(); stopListening(); addLog('BRIEFING', 'hl'); enter('speak'); say(t); };
+  window.ultronCmd = function (c) { primeAudio(); addLog('CMD › ' + c, 'br'); respond(c); };
+  document.addEventListener('click', function (e) {
+    if (S.mode === 'speak' && !(e.target.closest && e.target.closest('button,input,a'))) { primeAudio(); setMode('listen'); startListening(); }
+  });
+  window.ultronMicStart = function () { primeAudio(); if (S.mode !== 'listen') { setMode('listen'); startListening(); } };
+
+  // ---- "Hey ULTRON": while this screen is open, ULTRON quietly waits for its name ----
+  var wake = { on: false, rec: null, paused: false, timer: null };
+  var WAKE = /\b(hey|hi|hello|ok|okay|hai|he)?\s*(ultron|ultra|altron|alton|ultram|ul tron|all tron)\b[,.!]?\s*/i;
+  function wakeAllowed() {
+    try { return window.UltronNative && UltronNative.wakeOn && UltronNative.wakeOn(); } catch (e) { return false; }
+  }
+  function wakeLoop() {
+    clearTimeout(wake.timer);
+    if (!wake.on || wake.paused || document.hidden) return;
+    if (S.mode !== 'idle' || rec) { wake.timer = setTimeout(wakeLoop, 1200); return; }
+    var r = new SR();
+    wake.rec = r;
+    r.lang = 'en-IN';
+    r.onresult = function (e) {
+      var t = (e.results[0][0].transcript || '').trim();
+      var m = t.match(WAKE);
+      if (!m) return;
+      var rest = t.slice(m.index + m[0].length).trim();
+      wake.rec = null;
+      addLog('WAKE › ' + t, 'hl');
+      primeAudio();
+      if (rest.length > 2) respond(rest);
+      else { setMode('listen'); startListening(); }
+    };
+    r.onerror = function () {};
+    r.onend = function () { if (wake.rec === r) wake.rec = null; wake.timer = setTimeout(wakeLoop, 350); };
+    r.quiet = true;
+    try { r.start(); } catch (e) { wake.timer = setTimeout(wakeLoop, 2000); }
+  }
+  function wakeStart() { wake.on = wakeAllowed(); if (wake.on) { addLog('WAKE WORD · SAY "HEY ULTRON"', 'hl'); wakeLoop(); } }
+  window.__ultronPause = function () { wake.paused = true; clearTimeout(wake.timer); if (wake.rec) { try { wake.rec.abort(); } catch (e) {} wake.rec = null; } };
+  window.__ultronResume = function () { wake.paused = false; wake.on = wakeAllowed(); wakeLoop(); };
+  setTimeout(wakeStart, 4200);
+
+  render();
+  [['BOOT SEQUENCE COMPLETE', 'br'], ['NEURAL CORE ONLINE', ''], ['MEMORY MOUNTED · /persistent', ''], ['VOICE AUTH · OWNER ARSH', ''], ['AWAITING COMMAND', 'hl']].forEach(function (b, i) {
+    setTimeout(function () { addLog(b[0], b[1]); }, 250 + i * 420);
+  });
+  fetch('/health').then(function (r) { return r.json(); }).then(function (j) {
+    setTimeout(function () { addLog(j.key ? 'VOICE ENGINE · FISH AUDIO LINKED' : 'VOICE ENGINE · PHONE VOICE', j.key ? 'hl' : 'br'); }, 2400);
+  }).catch(function () {});
+  scheduleBlink();
+})();
+</script>
+<script>(function () {
+  var head = document.getElementById('head'), root = document.getElementById('root');
+  if (!head || !root) return;
+  var names = ['smile', 'curious', 'angry', 'sad'];
+  var css = document.createElement('style');
+  css.textContent = '.u-expr{transition:opacity .35s ease}#u-exprbar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:2px;padding:3px;border:1px solid rgba(150,160,175,.16);border-radius:4px;background:rgba(9,11,15,.75)}#u-exprbar .u-seg{height:26px;font-size:10px;padding:0 9px}';
+  document.head.appendChild(css);
+  var first = head.querySelector('.u-layer');
+  var L = {};
+  names.forEach(function (n) {
+    var img = document.createElement('img');
+    img.className = 'u-layer u-expr';
+    img.src = 'face/x-' + n + '.png';
+    img.alt = '';
+    head.insertBefore(img, first);
+    L[n] = img;
+  });
+  var cur = '', timer = null;
+  var bar = document.createElement('div');
+  bar.id = 'u-exprbar';
+  bar.setAttribute('role', 'group');
+  bar.setAttribute('aria-label', 'Facial expression');
+  function show(n, ms) {
+    clearTimeout(timer);
+    cur = n;
+    names.forEach(function (k) { L[k].classList.toggle('on', k === n); });
+    bar.querySelectorAll('button').forEach(function (b) { b.className = b.dataset.x === (n || 'neutral') ? 'u-seg on' : 'u-seg'; });
+    if (n && ms) timer = setTimeout(function () { show('', 0); }, ms);
+  }
+  ['neutral'].concat(names).forEach(function (n) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'u-seg';
+    b.textContent = n.toUpperCase();
+    b.dataset.x = n;
+    b.onclick = function () { show(n === 'neutral' ? '' : n, 0); };
+    bar.appendChild(b);
+  });
+  root.appendChild(bar);
+  show('', 0);
+  var last = 'idle';
+  function mode() { var m = root.className.match(/m-(\w+)/); return m ? m[1] : 'idle'; }
+  new MutationObserver(function () {
+    var m = mode();
+    if (m === last) return;
+    var prev = last;
+    last = m;
+    if (m === 'think') show('curious', 0);
+    else if (m === 'listen') show('curious', 1400);
+    else if (m === 'speak') { if (cur === 'curious' || cur === 'surprised') show('', 0); }
+    else if (m === 'idle' && prev === 'speak') show('smile', 2800);
+    else if (m === 'idle' && cur === 'curious') show('', 0);
+  }).observe(root, { attributes: true, attributeFilter: ['class'] });
+  // moods: the face reacts to what ULTRON is saying
+  window.ultronMood = function (text) {
+    var t = String(text || '').toLowerCase();
+    var n = /emergency|urgent|danger|scam|warning|careful|alert|failed|could not|couldn't|blocked/.test(t) ? 'angry'
+      : /sorry|sad|miss you|condolence|not well|unfortunately|bad news|hospital/.test(t) ? 'sad'
+      : /congrat|great|awesome|perfect|well done|correct!|happy|birthday|good morning|good night|done|sent|you won|love/.test(t) ? 'smile'
+      : /\?$|which|what would|should i|do you want/.test(t) ? 'curious' : '';
+    if (n) setTimeout(function () { show(n, 3200); }, 400);
+  };
+  (function idle() {
+    setTimeout(function () {
+      if (mode() === 'idle' && !cur) show(Math.random() < 0.6 ? 'smile' : 'curious', 2400);
+      idle();
+    }, 15000 + Math.random() * 15000);
+  })();
+})();
+
+(function () {
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'u-seg';
+  b.textContent = 'LOCK';
+  b.setAttribute('aria-label', 'Lock ULTRON');
+  b.style.cssText = 'position:absolute;top:66px;left:40px;z-index:5;border:1px solid rgba(255,23,40,.4)';
+  b.onclick = function () { fetch('/logout', {method: 'POST'}).then(function () { location.reload(); }); };
+  document.getElementById('root').appendChild(b);
+  var st = document.createElement('style');
+  st.textContent = '@media (max-width:760px){.u-side,.u-corner{display:none!important}' +
+    '#u-exprbar{position:fixed!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;' +
+    'overflow-x:auto!important;transform:none!important;justify-content:flex-start!important}' +
+    '.u-seg[aria-label="Lock ULTRON"]{top:8px!important;left:8px!important;padding:4px 8px!important;font-size:10px!important}}';
+  document.head.appendChild(st);
+})();
+
+(function () {
+  var box = null, timer = null;
+  window.ultronOpen = function (link) {
+    if (box) box.remove();
+    box = document.createElement('button');
+    box.type = 'button';
+    box.textContent = 'TAP TO OPEN ›';
+    box.style.cssText = 'position:fixed;left:12px;right:12px;bottom:64px;z-index:50;height:56px;font:600 15px "Share Tech Mono",monospace;' +
+      'letter-spacing:.2em;color:#fff;background:rgba(255,23,40,.85);border:1px solid #FF4452;box-shadow:0 0 24px rgba(255,23,40,.6)';
+    box.onclick = function () { go(link); box.remove(); box = null; };
+    document.body.appendChild(box);
+    clearTimeout(timer);
+    timer = setTimeout(function () { if (box) { box.remove(); box = null; } }, 30000);
+    try { if (/^(intent|tel|sms|mailto):/.test(link)) location.href = link; } catch (e) {}
+  };
+  window.ultronShow = function (text) {
+    var el = document.createElement('div');
+    el.textContent = text;
+    el.style.cssText = 'position:fixed;left:12px;right:12px;top:30%;z-index:60;padding:22px 10px;text-align:center;' +
+      'font:700 28px "Share Tech Mono",monospace;letter-spacing:.18em;color:#fff;background:rgba(6,7,10,.96);' +
+      'border:2px solid #FF1728;box-shadow:0 0 30px rgba(255,23,40,.6)';
+    var x = document.createElement('div');
+    x.textContent = 'tap to close';
+    x.style.cssText = 'font-size:11px;letter-spacing:.2em;color:#FF4452;margin-top:10px';
+    el.appendChild(x);
+    el.onclick = function () { el.remove(); };
+    document.body.appendChild(el);
+    setTimeout(function () { el.remove(); }, 120000);
+  };
+  function go(link) {
+    if (/^(intent|tel|sms|mailto):/.test(link)) location.href = link;
+    else window.open(link, '_blank');
+  }
+  if (/Android|iPhone|Mobile/.test(navigator.userAgent) && !window.isSecureContext) {
+    var mic = document.getElementById('mic');
+    if (mic) mic.addEventListener('click', function () {
+      setTimeout(function () {
+        var log = document.querySelector('#log, .u-log, [data-log]');
+        var tip = 'MIC NEEDS ONE CHROME SETTING · OR USE THE KEYBOARD MIC IN THE TEXT BOX';
+        var el = document.createElement('div');
+        el.textContent = tip;
+        el.style.cssText = 'position:fixed;left:12px;right:12px;top:44px;z-index:50;padding:10px;font:12px "Share Tech Mono",monospace;' +
+          'letter-spacing:.08em;color:#FF4452;background:rgba(6,7,10,.95);border:1px solid rgba(255,23,40,.5)';
+        document.body.appendChild(el);
+        setTimeout(function () { el.remove(); }, 7000);
+      }, 1500);
+    }, true);
+  }
+})();
+</script><script>(function () {
+  function btn(text, top, page) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'u-seg'; b.textContent = text;
+    b.style.cssText = 'position:fixed;top:' + top + 'px;right:8px;z-index:6;padding:4px 8px;font-size:10px;border:1px solid rgba(255,23,40,.4)';
+    b.onclick = function () { location.href = '/' + page; };
+    document.body.appendChild(b);
+  }
+  btn('KEYS', 8, 'keys.html');
+  btn('SETUP', 40, 'setup.html');
+  btn('CONTROL', 72, 'control.html');
+  btn('MEMORY', 104, 'memory.html');
+  btn('ULTRON+', 136, 'plus.html');
+  fetch('/keysinfo', { method: 'POST', body: '{}' }).then(function (r) { return r.json(); }).then(function (j) {
+    if (!j.brains) setTimeout(function () { location.href = '/keys.html'; }, 2500);
+  }).catch(function () {});
+})();
+</script></body>
+</html>

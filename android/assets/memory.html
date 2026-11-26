@@ -1,0 +1,217 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&display=swap"><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 45%,#12060a,#030405 70%);color:#C9CED6;font-family:'Share Tech Mono',monospace}
+.box{width:min(440px,92vw);padding:30px 24px;border:1px solid rgba(255,23,40,.45);background:rgba(6,7,10,.88);clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);text-align:center;box-sizing:border-box}
+h1{margin:0 0 6px;font-family:'Orbitron',sans-serif;font-size:30px;letter-spacing:.4em;margin-right:-.4em;color:#ECEFF3}
+p.sub{margin:0 0 22px;font-size:11px;letter-spacing:.28em;color:#FF4452}
+label{display:block;text-align:left;font-size:11px;letter-spacing:.2em;color:#8A919C;margin:14px 0 8px}
+input,textarea{width:100%;box-sizing:border-box;padding:12px 14px;background:#07080b;border:1px solid rgba(150,160,175,.25);color:#E6E9EE;font-family:inherit;font-size:15px;outline:none}
+input{height:46px;letter-spacing:.15em}
+textarea{height:130px;font-size:13px;resize:vertical}
+input:focus,textarea:focus{border-color:#FF1728}
+button{margin-top:16px;width:100%;height:46px;border:1px solid rgba(255,23,40,.6);background:rgba(255,23,40,.12);color:#FF4452;font-family:inherit;font-size:13px;letter-spacing:.25em;cursor:pointer}
+button.ghost{background:transparent;border-color:rgba(150,160,175,.3);color:#8A919C}
+#msg{min-height:18px;margin-top:14px;font-size:12px;letter-spacing:.1em;color:#FF4452}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#FF1728;box-shadow:0 0 10px #FF1728;margin-right:8px;vertical-align:1px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 0;border-bottom:1px solid rgba(150,160,175,.12);font-size:13px}
+.row b{display:block;color:#ECEFF3;font-weight:normal;letter-spacing:.08em}
+.row small{color:#8A919C;font-size:11px}
+.row button{width:auto;margin:0;height:34px;padding:0 12px;font-size:11px;letter-spacing:.15em;flex:none}
+.ok{color:#3DDC84}.no{color:#FF4452}
+.note{font-size:11px;color:#8A919C;text-align:left;line-height:1.6;margin-top:14px}
+.switch{position:relative;width:46px;height:24px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#1a1d22;border:1px solid rgba(150,160,175,.3);transition:.2s}
+.switch span:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#8A919C;transition:.2s}
+.switch input:checked+span{background:rgba(255,23,40,.25);border-color:#FF1728}
+.switch input:checked+span:before{transform:translateX(22px);background:#FF4452}
+.big{font-size:15px!important;letter-spacing:.12em}
+.logrow{text-align:left;font-size:12px;padding:10px 0;border-bottom:1px solid rgba(150,160,175,.12);line-height:1.5}
+.logrow i{color:#8A919C;font-style:normal;font-size:11px}
+.box.wide{max-height:none;margin:20px 0}
+body.scroll{align-items:flex-start}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 4px}
+.tile{border:1px solid rgba(150,160,175,.18);padding:10px;text-align:left;background:rgba(10,11,14,.7)}
+.tile small{display:block;font-size:10px;letter-spacing:.18em;color:#8A919C}
+.tile b{font-weight:normal;font-size:14px;color:#ECEFF3}
+.stop{height:58px;font-size:18px;letter-spacing:.4em;background:rgba(255,23,40,.85);color:#fff;border-color:#FF1728;box-shadow:0 0 22px rgba(255,23,40,.5)}
+.modes{display:flex;gap:6px;margin-top:6px}
+.modes button{margin:0;height:40px;font-size:11px;letter-spacing:.12em}
+.modes button.on{background:rgba(255,23,40,.85);color:#fff}
+.card{border:1px solid rgba(255,23,40,.4);padding:12px;margin:10px 0;text-align:left;font-size:13px;line-height:1.5}
+.card textarea{height:80px;margin-top:6px}
+.card .btns{display:flex;gap:6px}
+.card .btns button{margin-top:8px;height:38px;font-size:11px}
+.lvl3{border-color:#FFB020}
+h2{font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:.3em;color:#FF4452;text-align:left;margin:22px 0 6px}
+.item{text-align:left;font-size:12px;padding:8px 0;border-bottom:1px solid rgba(150,160,175,.1);line-height:1.45}
+.item i{color:#8A919C;font-style:normal;font-size:11px}
+.chip{display:inline-block;font-size:10px;padding:2px 6px;margin:3px 4px 0 0;border:1px solid rgba(150,160,175,.3);color:#8A919C}
+.chip.ok{border-color:#3DDC84}
+.tabs{display:flex;gap:4px;margin:4px 0 12px;flex-wrap:wrap}
+.tabs button{flex:1;margin:0;height:38px;font-size:10px;letter-spacing:.12em;min-width:70px}
+.tabs button.on{background:rgba(255,23,40,.85);color:#fff}
+.mem{border:1px solid rgba(150,160,175,.18);padding:10px;margin:8px 0;text-align:left;font-size:13px;line-height:1.5}
+.mem i{color:#8A919C;font-style:normal;font-size:11px}
+.mem .btns{display:flex;gap:6px}
+.mem .btns button{margin-top:8px;height:32px;font-size:10px}
+select{width:100%;height:42px;background:#07080b;border:1px solid rgba(150,160,175,.25);color:#E6E9EE;font-family:inherit;font-size:13px;padding:0 10px}
+.sum{white-space:pre-wrap;text-align:left;font-size:13px;line-height:1.6;color:#C9CED6}</style><script>(function () {
+  var n = 0, cbs = {}, srs = {}, utts = {};
+  window.__nativeDone = function (id, status, text) { var cb = cbs[id]; delete cbs[id]; if (cb) cb(status, text); };
+  function nativeCall(route, body) {
+    return new Promise(function (res) {
+      var id = 'c' + (++n);
+      cbs[id] = function (st, txt) { res({ st: st, txt: txt }); };
+      UltronNative.call(route, id, body || '{}');
+    });
+  }
+  window.ultronNative = nativeCall;
+  var NATIVE = ['/ask', '/speak', '/login', '/logout', '/health', '/keys', '/keysinfo', '/setupinfo', '/lockinfo', '/autoinfo', '/autosave', '/control', '/approve', '/reject', '/stop', '/clearhistory', '/memory', '/memadd', '/memedit', '/memdel', '/memsettings', '/memsummary', '/memwipe', '/memexport', '/memimport', '/contactrule', '/takeover', '/attentiondone', '/biounlock', '/plusinfo', '/plussave', '/routine', '/briefing', '/pcpair', '/pcunpair', '/pcsync', '/docpick', '/askbgloc'];
+  var realFetch = window.fetch.bind(window);
+  window.fetch = function (u, o) {
+    var url = typeof u === 'string' ? u : u.url;
+    var path = url.replace(/^https:\/\/ultron\.app/, '').split('?')[0];
+    if (NATIVE.indexOf(path) < 0) return realFetch(u, o);
+    return nativeCall(path, o && o.body ? String(o.body) : '{}').then(function (r) {
+      if (path === '/speak' && r.st === 200) {
+        var b = atob(JSON.parse(r.txt).b64), a = new Uint8Array(b.length);
+        for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
+        return new Response(a.buffer, { status: 200, headers: { 'Content-Type': 'audio/mpeg' } });
+      }
+      return new Response(r.txt, { status: r.st, headers: { 'Content-Type': 'application/json' } });
+    });
+  };
+  // Phone microphone (Android speech recognition)
+  function SR() { this.lang = 'en-IN'; this.onresult = null; this.onerror = null; this.onend = null; }
+  SR.prototype.start = function () { var id = 's' + (++n); srs[id] = this; UltronNative.listen(id, this.lang || 'en-IN'); };
+  SR.prototype.abort = SR.prototype.stop = function () { UltronNative.stopListen(); };
+  window.__srEvent = function (id, type, text) {
+    var r = srs[id]; if (!r) return;
+    if (type === 'result' && r.onresult) r.onresult({ results: [[{ transcript: text, confidence: 0.9 }]] });
+    else if (type === 'error' && r.onerror) r.onerror({ error: text });
+    else if (type === 'end') { delete srs[id]; if (r.onend) r.onend(); }
+  };
+  window.SpeechRecognition = window.webkitSpeechRecognition = SR;
+  // Phone voice (Android text to speech) when ULTRON's own voice key is not set
+  function Utt(t) { this.text = t; this.pitch = 1; this.rate = 1; this.onstart = null; this.onend = null; }
+  window.__ttsEvent = function (id, type) {
+    var u = utts[id]; if (!u) return;
+    if (type === 'start' && u.onstart) u.onstart();
+    if (type === 'end') { delete utts[id]; if (u.onend) u.onend(); }
+  };
+  var synth = {
+    speak: function (u) { var id = 't' + (++n); utts[id] = u; UltronNative.tts(id, String(u.text), u.pitch || 1, u.rate || 1); },
+    cancel: function () { UltronNative.ttsStop(); utts = {}; }, speaking: false, pending: false
+  };
+  try { Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utt, configurable: true, writable: true }); } catch (e) { window.SpeechSynthesisUtterance = Utt; }
+  try { Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true }); } catch (e) {}
+})();</script><title>ULTRON memory</title></head><body class="scroll">
+<div class="box wide">
+<h1>MEMORY</h1>
+<p class="sub"><span class="dot"></span><span id="status">ULTRON'S PERSONAL MEMORY</span></p>
+<div class="tabs"><button data-t="mem" class="on">MEMORIES</button><button data-t="me">UNDERSTANDING ARSH</button><button data-t="log">CONVERSATIONS</button><button data-t="set">SETTINGS</button></div>
+
+<div id="t-mem">
+<input id="q" placeholder="Search memories">
+<select id="cat"></select>
+<label for="newtext">ADD A MEMORY</label>
+<textarea id="newtext" style="height:70px" placeholder="Example: I prefer short replies in Hinglish"></textarea>
+<select id="newcat"></select>
+<button id="add">REMEMBER THIS</button>
+<div id="mems"></div>
+</div>
+
+<div id="t-me" style="display:none">
+<div class="note">Built only from what you told ULTRON. Correct or delete anything in MEMORIES.</div>
+<button id="build">UPDATE MY PROFILE</button>
+<div class="sum" id="summary"></div>
+<div id="groups"></div>
+</div>
+
+<div id="t-log" style="display:none">
+<input id="lq" placeholder="Search conversations (try: yesterday, plans, last week)">
+<div id="log"></div>
+</div>
+
+<div id="t-set" style="display:none">
+<div class="row"><div><b>Pause memory</b><small>Stop saving new conversations and facts</small></div><label class="switch"><input type="checkbox" id="paused"><span></span></label></div>
+<label>CATEGORIES ULTRON MAY LEARN</label>
+<div id="cats"></div>
+<button id="export">EXPORT BACKUP</button>
+<label for="imp">RESTORE FROM BACKUP (PASTE IT HERE)</label>
+<textarea id="imp" style="height:70px"></textarea>
+<button class="ghost" id="import">RESTORE</button>
+<button class="ghost" id="wipeLog">DELETE ALL CONVERSATIONS</button>
+<button class="ghost" id="wipeMem">DELETE ALL MEMORIES</button>
+<div class="note">Memories are encrypted on this phone. ULTRON never stores passwords, codes or OTPs, and never uses your data for training.</div>
+</div>
+<button class="ghost" onclick="location.href='/'">BACK TO ULTRON</button>
+<div id="msg" role="status"></div>
+</div>
+<script>
+var D = null, tab = 'mem', timer = null;
+function esc(t) { var d = document.createElement('div'); d.textContent = t == null ? '' : String(t); return d.innerHTML; }
+function post(r, b) { return fetch(r, {method: 'POST', body: JSON.stringify(b || {})}).then(function (x) { return x.json(); }); }
+function say(t) { document.getElementById('msg').textContent = t; }
+function when(t) { return new Date(t).toLocaleString(); }
+function load() {
+  return post('/memory', {q: document.getElementById('q').value, category: document.getElementById('cat').value, logq: document.getElementById('lq').value}).then(function (j) {
+    var first = !D; D = j;
+    if (first) {
+      var opts = '<option value="">ALL CATEGORIES</option>' + j.categories.map(function (c) { return '<option value="' + c + '">' + c.toUpperCase() + '</option>'; }).join('');
+      document.getElementById('cat').innerHTML = opts;
+      document.getElementById('newcat').innerHTML = j.categories.map(function (c) { return '<option value="' + c + '">' + c.toUpperCase() + '</option>'; }).join('');
+      document.getElementById('newcat').value = 'personal';
+    }
+    document.getElementById('status').textContent = (j.paused ? 'PAUSED · ' : 'LEARNING · ') + j.items.length + ' MEMORIES SHOWN';
+    document.getElementById('mems').innerHTML = j.items.length ? j.items.map(function (m) {
+      return '<div class="mem" id="m' + esc(m.id) + '"><i>' + esc(m.category).toUpperCase() + ' · ' + esc(when(m.updated)) + ' · ' + esc(m.source) +
+        ' · confidence ' + Math.round((m.confidence || 0) * 100) + '%' + (m.expires ? ' · temporary' : '') + '</i><br><span>' + esc(m.text) + '</span>' +
+        '<div class="btns"><button class="ghost" onclick="editMem(\'' + esc(m.id) + '\')">CORRECT</button><button class="ghost" onclick="delMem(\'' + esc(m.id) + '\')">DELETE</button></div></div>';
+    }).join('') : '<div class="note">No memories yet. Talk to ULTRON, or add one above.</div>';
+    var p = j.profile;
+    document.getElementById('summary').textContent = p.summary ? p.summary + (p.summaryAt ? '\n\n(updated ' + p.summaryAt + ')' : '') : 'Tap UPDATE MY PROFILE to write it from your memories.';
+    document.getElementById('groups').innerHTML = j.categories.map(function (c) {
+      var list = p[c] || []; if (!list.length) return '';
+      return '<h2>' + esc(c.toUpperCase()) + '</h2>' + list.map(function (m) { return '<div class="item">' + esc(m.text) + '</div>'; }).join('');
+    }).join('');
+    document.getElementById('log').innerHTML = j.log.length ? j.log.slice().reverse().map(function (t) {
+      return '<div class="item"><i>' + esc(when(t.t)) + ' · ' + esc(t.brain || '') + '</i><br><b>Arsh:</b> ' + esc(t.arsh) + '<br><span class="ok">ULTRON:</span> ' + esc(t.ultron) + '</div>';
+    }).join('') : '<div class="note">No saved conversations match.</div>';
+    document.getElementById('paused').checked = j.paused;
+    var off = (j.off || '').split(',');
+    document.getElementById('cats').innerHTML = j.categories.map(function (c) {
+      return '<div class="row"><div><b>' + esc(c) + '</b></div><label class="switch"><input type="checkbox" data-cat="' + c + '"' + (off.indexOf(c) < 0 ? ' checked' : '') + '><span></span></label></div>';
+    }).join('');
+    document.querySelectorAll('[data-cat]').forEach(function (b) { b.onchange = saveCats; });
+  });
+}
+function later() { clearTimeout(timer); timer = setTimeout(load, 350); }
+function editMem(id) {
+  var box = document.getElementById('m' + id), span = box.querySelector('span');
+  box.innerHTML = '<textarea style="height:70px">' + esc(span.textContent) + '</textarea><div class="btns"><button>SAVE</button><button class="ghost">CANCEL</button></div>';
+  var bs = box.querySelectorAll('button');
+  bs[0].onclick = function () { post('/memedit', {id: id, text: box.querySelector('textarea').value}).then(function () { say('CORRECTED'); load(); }); };
+  bs[1].onclick = load;
+}
+function delMem(id) { post('/memdel', {id: id}).then(function () { say('DELETED'); load(); }); }
+function saveCats() {
+  var off = []; document.querySelectorAll('[data-cat]').forEach(function (c) { if (!c.checked) off.push(c.dataset.cat); });
+  post('/memsettings', {off: off.join(',')}).then(function () { say('SAVED'); });
+}
+document.querySelectorAll('[data-t]').forEach(function (b) { b.onclick = function () {
+  tab = b.dataset.t; document.querySelectorAll('[data-t]').forEach(function (x) { x.className = x === b ? 'on' : ''; });
+  ['mem', 'me', 'log', 'set'].forEach(function (t) { document.getElementById('t-' + t).style.display = t === tab ? 'block' : 'none'; });
+}; });
+document.getElementById('q').oninput = later; document.getElementById('lq').oninput = later; document.getElementById('cat').onchange = load;
+document.getElementById('add').onclick = function () {
+  post('/memadd', {text: document.getElementById('newtext').value, category: document.getElementById('newcat').value}).then(function (j) {
+    say(j.ok ? 'REMEMBERED' : j.error); if (j.ok) document.getElementById('newtext').value = ''; load(); });
+};
+document.getElementById('build').onclick = function () { say('WRITING YOUR PROFILE...'); post('/memsummary').then(function () { say('PROFILE UPDATED'); load(); }); };
+document.getElementById('paused').onchange = function () { post('/memsettings', {paused: this.checked}).then(load); };
+document.getElementById('export').onclick = function () { post('/memexport').then(function () { say('CHOOSE WHERE TO SAVE THE BACKUP'); }); };
+document.getElementById('import').onclick = function () { post('/memimport', {text: document.getElementById('imp').value}).then(function (j) { say(j.error ? 'NOT A VALID BACKUP' : 'RESTORED ' + j.count + ' MEMORIES'); load(); }); };
+document.getElementById('wipeLog').onclick = function () { post('/memwipe', {conversations: true}).then(function (j) { say(j.ok ? 'CONVERSATIONS DELETED' : 'KEPT'); load(); }); };
+document.getElementById('wipeMem').onclick = function () { post('/memwipe', {memories: true}).then(function (j) { say(j.ok ? 'MEMORIES DELETED' : 'KEPT'); load(); }); };
+load(); window.__ultronResume = load;
+</script></body></html>

@@ -1,0 +1,196 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&display=swap"><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 45%,#12060a,#030405 70%);color:#C9CED6;font-family:'Share Tech Mono',monospace}
+.box{width:min(440px,92vw);padding:30px 24px;border:1px solid rgba(255,23,40,.45);background:rgba(6,7,10,.88);clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);text-align:center;box-sizing:border-box}
+h1{margin:0 0 6px;font-family:'Orbitron',sans-serif;font-size:30px;letter-spacing:.4em;margin-right:-.4em;color:#ECEFF3}
+p.sub{margin:0 0 22px;font-size:11px;letter-spacing:.28em;color:#FF4452}
+label{display:block;text-align:left;font-size:11px;letter-spacing:.2em;color:#8A919C;margin:14px 0 8px}
+input,textarea{width:100%;box-sizing:border-box;padding:12px 14px;background:#07080b;border:1px solid rgba(150,160,175,.25);color:#E6E9EE;font-family:inherit;font-size:15px;outline:none}
+input{height:46px;letter-spacing:.15em}
+textarea{height:130px;font-size:13px;resize:vertical}
+input:focus,textarea:focus{border-color:#FF1728}
+button{margin-top:16px;width:100%;height:46px;border:1px solid rgba(255,23,40,.6);background:rgba(255,23,40,.12);color:#FF4452;font-family:inherit;font-size:13px;letter-spacing:.25em;cursor:pointer}
+button.ghost{background:transparent;border-color:rgba(150,160,175,.3);color:#8A919C}
+#msg{min-height:18px;margin-top:14px;font-size:12px;letter-spacing:.1em;color:#FF4452}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#FF1728;box-shadow:0 0 10px #FF1728;margin-right:8px;vertical-align:1px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 0;border-bottom:1px solid rgba(150,160,175,.12);font-size:13px}
+.row b{display:block;color:#ECEFF3;font-weight:normal;letter-spacing:.08em}
+.row small{color:#8A919C;font-size:11px}
+.row button{width:auto;margin:0;height:34px;padding:0 12px;font-size:11px;letter-spacing:.15em;flex:none}
+.ok{color:#3DDC84}.no{color:#FF4452}
+.note{font-size:11px;color:#8A919C;text-align:left;line-height:1.6;margin-top:14px}
+.switch{position:relative;width:46px;height:24px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#1a1d22;border:1px solid rgba(150,160,175,.3);transition:.2s}
+.switch span:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#8A919C;transition:.2s}
+.switch input:checked+span{background:rgba(255,23,40,.25);border-color:#FF1728}
+.switch input:checked+span:before{transform:translateX(22px);background:#FF4452}
+.big{font-size:15px!important;letter-spacing:.12em}
+.logrow{text-align:left;font-size:12px;padding:10px 0;border-bottom:1px solid rgba(150,160,175,.12);line-height:1.5}
+.logrow i{color:#8A919C;font-style:normal;font-size:11px}
+.box.wide{max-height:none;margin:20px 0}
+body.scroll{align-items:flex-start}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 4px}
+.tile{border:1px solid rgba(150,160,175,.18);padding:10px;text-align:left;background:rgba(10,11,14,.7)}
+.tile small{display:block;font-size:10px;letter-spacing:.18em;color:#8A919C}
+.tile b{font-weight:normal;font-size:14px;color:#ECEFF3}
+.stop{height:58px;font-size:18px;letter-spacing:.4em;background:rgba(255,23,40,.85);color:#fff;border-color:#FF1728;box-shadow:0 0 22px rgba(255,23,40,.5)}
+.modes{display:flex;gap:6px;margin-top:6px}
+.modes button{margin:0;height:40px;font-size:11px;letter-spacing:.12em}
+.modes button.on{background:rgba(255,23,40,.85);color:#fff}
+.card{border:1px solid rgba(255,23,40,.4);padding:12px;margin:10px 0;text-align:left;font-size:13px;line-height:1.5}
+.card textarea{height:80px;margin-top:6px}
+.card .btns{display:flex;gap:6px}
+.card .btns button{margin-top:8px;height:38px;font-size:11px}
+.lvl3{border-color:#FFB020}
+h2{font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:.3em;color:#FF4452;text-align:left;margin:22px 0 6px}
+.item{text-align:left;font-size:12px;padding:8px 0;border-bottom:1px solid rgba(150,160,175,.1);line-height:1.45}
+.item i{color:#8A919C;font-style:normal;font-size:11px}
+.chip{display:inline-block;font-size:10px;padding:2px 6px;margin:3px 4px 0 0;border:1px solid rgba(150,160,175,.3);color:#8A919C}
+.chip.ok{border-color:#3DDC84}</style><script>(function () {
+  var n = 0, cbs = {}, srs = {}, utts = {};
+  window.__nativeDone = function (id, status, text) { var cb = cbs[id]; delete cbs[id]; if (cb) cb(status, text); };
+  function nativeCall(route, body) {
+    return new Promise(function (res) {
+      var id = 'c' + (++n);
+      cbs[id] = function (st, txt) { res({ st: st, txt: txt }); };
+      UltronNative.call(route, id, body || '{}');
+    });
+  }
+  window.ultronNative = nativeCall;
+  var NATIVE = ['/ask', '/speak', '/login', '/logout', '/health', '/keys', '/keysinfo', '/setupinfo', '/lockinfo', '/autoinfo', '/autosave', '/control', '/approve', '/reject', '/stop', '/clearhistory', '/memory', '/memadd', '/memedit', '/memdel', '/memsettings', '/memsummary', '/memwipe', '/memexport', '/memimport', '/contactrule', '/takeover', '/attentiondone', '/callinfo', '/callsave', '/setcategory', '/ownertest', '/ownerdigest', '/biounlock', '/plusinfo', '/plussave', '/routine', '/briefing', '/pcpair', '/pcunpair', '/pcsync', '/docpick', '/askbgloc'];
+  var realFetch = window.fetch.bind(window);
+  window.fetch = function (u, o) {
+    var url = typeof u === 'string' ? u : u.url;
+    var path = url.replace(/^https:\/\/ultron\.app/, '').split('?')[0];
+    if (NATIVE.indexOf(path) < 0) return realFetch(u, o);
+    return nativeCall(path, o && o.body ? String(o.body) : '{}').then(function (r) {
+      if (path === '/speak' && r.st === 200) {
+        var b = atob(JSON.parse(r.txt).b64), a = new Uint8Array(b.length);
+        for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
+        return new Response(a.buffer, { status: 200, headers: { 'Content-Type': 'audio/mpeg' } });
+      }
+      return new Response(r.txt, { status: r.st, headers: { 'Content-Type': 'application/json' } });
+    });
+  };
+  // Phone microphone (Android speech recognition)
+  function SR() { this.lang = 'en-IN'; this.onresult = null; this.onerror = null; this.onend = null; }
+  SR.prototype.start = function () { var id = 's' + (++n); srs[id] = this; UltronNative.listen(id, this.lang || 'en-IN'); };
+  SR.prototype.abort = SR.prototype.stop = function () { UltronNative.stopListen(); };
+  window.__srEvent = function (id, type, text) {
+    var r = srs[id]; if (!r) return;
+    if (type === 'result' && r.onresult) r.onresult({ results: [[{ transcript: text, confidence: 0.9 }]] });
+    else if (type === 'error' && r.onerror) r.onerror({ error: text });
+    else if (type === 'end') { delete srs[id]; if (r.onend) r.onend(); }
+  };
+  window.SpeechRecognition = window.webkitSpeechRecognition = SR;
+  // Phone voice (Android text to speech) when ULTRON's own voice key is not set
+  function Utt(t) { this.text = t; this.pitch = 1; this.rate = 1; this.onstart = null; this.onend = null; }
+  window.__ttsEvent = function (id, type) {
+    var u = utts[id]; if (!u) return;
+    if (type === 'start' && u.onstart) u.onstart();
+    if (type === 'end') { delete utts[id]; if (u.onend) u.onend(); }
+  };
+  var synth = {
+    speak: function (u) { var id = 't' + (++n); utts[id] = u; UltronNative.tts(id, String(u.text), u.pitch || 1, u.rate || 1); },
+    cancel: function () { UltronNative.ttsStop(); utts = {}; }, speaking: false, pending: false
+  };
+  try { Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utt, configurable: true, writable: true }); } catch (e) { window.SpeechSynthesisUtterance = Utt; }
+  try { Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true }); } catch (e) {}
+})();</script><title>ULTRON calls &amp; owner alerts</title></head><body class="scroll">
+<div class="box wide">
+<h1>CALLS</h1>
+<p class="sub"><span class="dot"></span>CALL DESK &amp; OWNER ALERTS</p>
+
+<h2>PERMISSIONS</h2>
+<div id="perms"></div>
+
+<h2>CALL DESK</h2>
+<div class="row"><div><b>Call management</b><small>Watch every incoming call (SIM, WhatsApp, Instagram, Snapchat, Telegram, Messenger)</small></div><label class="switch"><input type="checkbox" id="callsOn"><span></span></label></div>
+<div class="row"><div><b>Missed-call alerts</b><small>Tell me about missed calls (repeated calls = high priority)</small></div><label class="switch"><input type="checkbox" id="missedAlerts"><span></span></label></div>
+<div class="row"><div><b>Text back known callers</b><small>After a missed call, ULTRON tells them Arsh will get the message and asks what it is about (AUTO mode)</small></div><label class="switch"><input type="checkbox" id="tbKnown"><span></span></label></div>
+<div class="row"><div><b>Text back unknown numbers</b><small>Off = unknown callers get no message (no personal info shared)</small></div><label class="switch"><input type="checkbox" id="tbUnknown"><span></span></label></div>
+<div class="row"><div><b>Decline unwanted callers</b><small>SIM calls from contacts marked UNWANTED or RESTRICTED are declined</small></div><label class="switch"><input type="checkbox" id="rejectUnwanted"><span></span></label></div>
+
+<h2>OWNER ALERTS</h2>
+<label for="ownerNumber">ARSH'S NUMBER FOR ALERTS</label>
+<input id="ownerNumber" type="tel" placeholder="">
+<div class="row"><div><b>This number is on THIS phone</b><small>Turn on if ULTRON runs on the phone with this number: alerts then come as alarm notifications here (no SMS or call to itself)</small></div><label class="switch"><input type="checkbox" id="samePhone"><span></span></label></div>
+<div class="row"><div><b>Reports by SMS</b><small>Works even when the phone is locked; delivery is confirmed in the log</small></div><label class="switch"><input type="checkbox" id="ownerSms"><span></span></label></div>
+<div class="row"><div><b>Reports by WhatsApp</b><small>Sent through the screen helper when the phone is unlocked (waits for the next unlock otherwise)</small></div><label class="switch"><input type="checkbox" id="ownerWa"><span></span></label></div>
+<div class="row"><div><b>Call me in an emergency</b><small>If an emergency is not acknowledged within 45 seconds, ULTRON calls the number above</small></div><label class="switch"><input type="checkbox" id="ownerCall"><span></span></label></div>
+<label for="maxCalls">MAXIMUM EMERGENCY CALLS PER HOUR (0-5)</label>
+<input id="maxCalls" type="number" min="0" max="5">
+<label for="digest">SEND ROUTINE SUMMARY EVERY (MINUTES, MIN 15)</label>
+<input id="digest" type="number" min="15">
+<label>EMERGENCY SENSITIVITY</label>
+<div class="modes" id="sens"><button data-s="low">LOW</button><button data-s="normal">NORMAL</button><button data-s="high">HIGH</button></div>
+<div class="note">NORMAL / LOW: the AI must judge it a genuine emergency (injury, accident, danger, family urgently needs you). HIGH: words like "accident" or "hospital" alert you at once, even before the AI checks.</div>
+<button id="save">SAVE</button>
+<button class="ghost" id="test">SEND A TEST REPORT</button>
+<button class="ghost" id="digestNow">SEND SUMMARY NOW</button>
+<div id="msg"></div>
+
+<h2>CONTACT CATEGORIES</h2>
+<div class="note">FAMILY / CLOSE / IMPORTANT: alerts straight away. UNWANTED / RESTRICTED: never answered, nothing shared.</div>
+<div id="cats"></div>
+<label for="newName">ADD A CONTACT BY NAME (EXACTLY AS IT SHOWS IN THE APP)</label>
+<input id="newName" type="text">
+<select id="newCat" style="width:100%;height:42px;margin-top:8px;background:#07080b;color:#E6E9EE;border:1px solid rgba(150,160,175,.25);font-family:inherit"></select>
+<button class="ghost" id="addCat">SET CATEGORY</button>
+
+<h2>CALL LOG</h2>
+<div id="log"><div class="note">No calls yet.</div></div>
+
+<h2>WHAT ANDROID ALLOWS</h2>
+<div class="note">
+✅ SIM calls: caller name and number, answered / missed / declined, repeated calls, declining unwanted callers, texting missed callers by SMS.<br>
+✅ WhatsApp, Instagram, Snapchat, Telegram, Messenger calls: incoming and missed calls are seen and logged, and you are told about them.<br>
+❌ ULTRON cannot answer a call and talk to the caller with its AI voice. Android does not let any normal app speak into a phone call or hear the caller, and WhatsApp, Instagram, Snapchat and Telegram have no way for another app to answer their calls. Only the phone company's network (call forwarding to an AI receptionist number) can do that.<br>
+❌ Call recording and live call transcripts: not possible for the same reason, so ULTRON only reports call details (who, when, how often), never what was said on a call.
+</div>
+
+<button class="ghost" onclick="location.href='control.html'">BACK TO CONTROL</button>
+</div>
+<script>
+function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function call(p,b){return fetch('https://ultron.app'+p,{method:'POST',body:JSON.stringify(b||{})}).then(function(r){return r.json();});}
+var sens='normal', cats=[];
+function show(d){
+  var c=d.calls,o=d.owner;
+  ['callsOn','missedAlerts','tbKnown','tbUnknown','rejectUnwanted'].forEach(function(k){document.getElementById(k).checked=!!c[k==='callsOn'?'on':k];});
+  document.getElementById('ownerNumber').value=o.number;
+  document.getElementById('samePhone').checked=o.samePhone;
+  document.getElementById('ownerSms').checked=o.sms;
+  document.getElementById('ownerWa').checked=o.wa;
+  document.getElementById('ownerCall').checked=o.call;
+  document.getElementById('maxCalls').value=o.maxCalls;
+  document.getElementById('digest').value=o.digest;
+  sens=o.sens; markSens();
+  var p=[['Phone calls (who is calling)',d.phone],['Call history (missed or declined)',d.callLog],['Send SMS',d.sms],['Make calls',d.dial],['Screen helper (WhatsApp reports, Snapchat)',d.access]];
+  document.getElementById('perms').innerHTML=p.map(function(x){return '<div class="row"><div><b>'+esc(x[0])+'</b></div><span class="'+(x[1]?'ok':'no')+'">'+(x[1]?'ALLOWED':'NOT ALLOWED')+'</span></div>';}).join('')+
+    ((d.phone&&d.callLog&&d.sms&&d.dial)?'':'<div class="note">Android will ask for the missing permissions. If it does not, open Settings &gt; Apps &gt; ULTRON &gt; Permissions.</div>');
+  cats=d.cats;
+  document.getElementById('newCat').innerHTML=cats.map(function(x){return '<option>'+esc(x)+'</option>';}).join('');
+  var log=c.log.slice().reverse();
+  document.getElementById('log').innerHTML=log.length?log.slice(0,60).map(function(e){
+    return '<div class="item"><b>'+esc(e.who)+'</b> · '+esc(e.app)+' · <span class="'+(e.status==='missed'||e.status==='declined'?'no':'ok')+'">'+esc(e.status.toUpperCase())+'</span><br><i>'+new Date(e.at).toLocaleString()+(e.note?' · '+esc(e.note):'')+'</i>'+
+      '<br><select data-who="'+esc(e.who)+'" class="catsel" style="margin-top:4px;background:#07080b;color:#C9CED6;border:1px solid rgba(150,160,175,.25);font-family:inherit"><option value="">category…</option>'+cats.map(function(x){return '<option>'+esc(x)+'</option>';}).join('')+'</select></div>';
+  }).join(''):'<div class="note">No calls yet.</div>';
+  var seen={};document.getElementById('cats').innerHTML='';
+  document.querySelectorAll('.catsel').forEach(function(s){s.onchange=function(){if(!s.value)return;call('/setcategory',{who:s.getAttribute('data-who'),cat:s.value}).then(function(){msg(s.getAttribute('data-who')+' → '+s.value);});};});
+}
+function markSens(){document.querySelectorAll('#sens button').forEach(function(b){b.className=b.getAttribute('data-s')===sens?'on':'';});}
+document.querySelectorAll('#sens button').forEach(function(b){b.onclick=function(){sens=b.getAttribute('data-s');markSens();};});
+function msg(t){document.getElementById('msg').textContent=t;}
+function load(){call('/callinfo').then(show);}
+document.getElementById('save').onclick=function(){
+  call('/callsave',{callsOn:document.getElementById('callsOn').checked,missedAlerts:document.getElementById('missedAlerts').checked,
+    tbKnown:document.getElementById('tbKnown').checked,tbUnknown:document.getElementById('tbUnknown').checked,rejectUnwanted:document.getElementById('rejectUnwanted').checked,
+    ownerNumber:document.getElementById('ownerNumber').value,samePhone:document.getElementById('samePhone').checked,ownerSms:document.getElementById('ownerSms').checked,
+    ownerWa:document.getElementById('ownerWa').checked,ownerCall:document.getElementById('ownerCall').checked,maxCalls:parseInt(document.getElementById('maxCalls').value||'3',10),
+    digest:parseInt(document.getElementById('digest').value||'60',10),sens:sens}).then(function(d){show(d);msg('Saved.');});
+};
+document.getElementById('test').onclick=function(){call('/ownertest').then(function(d){msg(d.result);});};
+document.getElementById('digestNow').onclick=function(){call('/ownerdigest').then(function(){msg('Summary sent (if there was anything to report).');});};
+document.getElementById('addCat').onclick=function(){var n=document.getElementById('newName').value.trim();if(!n)return;call('/setcategory',{who:n,cat:document.getElementById('newCat').value}).then(function(){msg(n+' → '+document.getElementById('newCat').value);document.getElementById('newName').value='';});};
+load();
+</script></body></html>

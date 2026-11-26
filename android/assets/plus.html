@@ -1,0 +1,297 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&display=swap"><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 45%,#12060a,#030405 70%);color:#C9CED6;font-family:'Share Tech Mono',monospace}
+.box{width:min(440px,92vw);padding:30px 24px;border:1px solid rgba(255,23,40,.45);background:rgba(6,7,10,.88);clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);text-align:center;box-sizing:border-box}
+h1{margin:0 0 6px;font-family:'Orbitron',sans-serif;font-size:30px;letter-spacing:.4em;margin-right:-.4em;color:#ECEFF3}
+p.sub{margin:0 0 22px;font-size:11px;letter-spacing:.28em;color:#FF4452}
+label{display:block;text-align:left;font-size:11px;letter-spacing:.2em;color:#8A919C;margin:14px 0 8px}
+input,textarea{width:100%;box-sizing:border-box;padding:12px 14px;background:#07080b;border:1px solid rgba(150,160,175,.25);color:#E6E9EE;font-family:inherit;font-size:15px;outline:none}
+input{height:46px;letter-spacing:.15em}
+textarea{height:130px;font-size:13px;resize:vertical}
+input:focus,textarea:focus{border-color:#FF1728}
+button{margin-top:16px;width:100%;height:46px;border:1px solid rgba(255,23,40,.6);background:rgba(255,23,40,.12);color:#FF4452;font-family:inherit;font-size:13px;letter-spacing:.25em;cursor:pointer}
+button.ghost{background:transparent;border-color:rgba(150,160,175,.3);color:#8A919C}
+#msg{min-height:18px;margin-top:14px;font-size:12px;letter-spacing:.1em;color:#FF4452}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#FF1728;box-shadow:0 0 10px #FF1728;margin-right:8px;vertical-align:1px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 0;border-bottom:1px solid rgba(150,160,175,.12);font-size:13px}
+.row b{display:block;color:#ECEFF3;font-weight:normal;letter-spacing:.08em}
+.row small{color:#8A919C;font-size:11px}
+.row button{width:auto;margin:0;height:34px;padding:0 12px;font-size:11px;letter-spacing:.15em;flex:none}
+.ok{color:#3DDC84}.no{color:#FF4452}
+.note{font-size:11px;color:#8A919C;text-align:left;line-height:1.6;margin-top:14px}
+.switch{position:relative;width:46px;height:24px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#1a1d22;border:1px solid rgba(150,160,175,.3);transition:.2s}
+.switch span:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#8A919C;transition:.2s}
+.switch input:checked+span{background:rgba(255,23,40,.25);border-color:#FF1728}
+.switch input:checked+span:before{transform:translateX(22px);background:#FF4452}
+.big{font-size:15px!important;letter-spacing:.12em}
+.logrow{text-align:left;font-size:12px;padding:10px 0;border-bottom:1px solid rgba(150,160,175,.12);line-height:1.5}
+.logrow i{color:#8A919C;font-style:normal;font-size:11px}
+.box.wide{max-height:none;margin:20px 0}
+body.scroll{align-items:flex-start}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 4px}
+.tile{border:1px solid rgba(150,160,175,.18);padding:10px;text-align:left;background:rgba(10,11,14,.7)}
+.tile small{display:block;font-size:10px;letter-spacing:.18em;color:#8A919C}
+.tile b{font-weight:normal;font-size:14px;color:#ECEFF3}
+.stop{height:58px;font-size:18px;letter-spacing:.4em;background:rgba(255,23,40,.85);color:#fff;border-color:#FF1728;box-shadow:0 0 22px rgba(255,23,40,.5)}
+.modes{display:flex;gap:6px;margin-top:6px}
+.modes button{margin:0;height:40px;font-size:11px;letter-spacing:.12em}
+.modes button.on{background:rgba(255,23,40,.85);color:#fff}
+.card{border:1px solid rgba(255,23,40,.4);padding:12px;margin:10px 0;text-align:left;font-size:13px;line-height:1.5}
+.card textarea{height:80px;margin-top:6px}
+.card .btns{display:flex;gap:6px}
+.card .btns button{margin-top:8px;height:38px;font-size:11px}
+.lvl3{border-color:#FFB020}
+h2{font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:.3em;color:#FF4452;text-align:left;margin:22px 0 6px}
+.item{text-align:left;font-size:12px;padding:8px 0;border-bottom:1px solid rgba(150,160,175,.1);line-height:1.45}
+.item i{color:#8A919C;font-style:normal;font-size:11px}
+.chip{display:inline-block;font-size:10px;padding:2px 6px;margin:3px 4px 0 0;border:1px solid rgba(150,160,175,.3);color:#8A919C}
+.chip.ok{border-color:#3DDC84}</style><script>(function () {
+  var n = 0, cbs = {}, srs = {}, utts = {};
+  window.__nativeDone = function (id, status, text) { var cb = cbs[id]; delete cbs[id]; if (cb) cb(status, text); };
+  function nativeCall(route, body) {
+    return new Promise(function (res) {
+      var id = 'c' + (++n);
+      cbs[id] = function (st, txt) { res({ st: st, txt: txt }); };
+      UltronNative.call(route, id, body || '{}');
+    });
+  }
+  window.ultronNative = nativeCall;
+  var NATIVE = ['/ask', '/speak', '/login', '/logout', '/health', '/keys', '/keysinfo', '/setupinfo', '/lockinfo', '/autoinfo', '/autosave', '/control', '/approve', '/reject', '/stop', '/clearhistory', '/memory', '/memadd', '/memedit', '/memdel', '/memsettings', '/memsummary', '/memwipe', '/memexport', '/memimport', '/contactrule', '/takeover', '/attentiondone', '/biounlock', '/plusinfo', '/plussave', '/routine', '/briefing', '/pcpair', '/pcunpair', '/pcsync', '/docpick', '/askbgloc'];
+  var realFetch = window.fetch.bind(window);
+  window.fetch = function (u, o) {
+    var url = typeof u === 'string' ? u : u.url;
+    var path = url.replace(/^https:\/\/ultron\.app/, '').split('?')[0];
+    if (NATIVE.indexOf(path) < 0) return realFetch(u, o);
+    return nativeCall(path, o && o.body ? String(o.body) : '{}').then(function (r) {
+      if (path === '/speak' && r.st === 200) {
+        var b = atob(JSON.parse(r.txt).b64), a = new Uint8Array(b.length);
+        for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
+        return new Response(a.buffer, { status: 200, headers: { 'Content-Type': 'audio/mpeg' } });
+      }
+      return new Response(r.txt, { status: r.st, headers: { 'Content-Type': 'application/json' } });
+    });
+  };
+  // Phone microphone (Android speech recognition)
+  function SR() { this.lang = 'en-IN'; this.onresult = null; this.onerror = null; this.onend = null; }
+  SR.prototype.start = function () { var id = 's' + (++n); srs[id] = this; UltronNative.listen(id, this.lang || 'en-IN'); };
+  SR.prototype.abort = SR.prototype.stop = function () { UltronNative.stopListen(); };
+  window.__srEvent = function (id, type, text) {
+    var r = srs[id]; if (!r) return;
+    if (type === 'result' && r.onresult) r.onresult({ results: [[{ transcript: text, confidence: 0.9 }]] });
+    else if (type === 'error' && r.onerror) r.onerror({ error: text });
+    else if (type === 'end') { delete srs[id]; if (r.onend) r.onend(); }
+  };
+  window.SpeechRecognition = window.webkitSpeechRecognition = SR;
+  // Phone voice (Android text to speech) when ULTRON's own voice key is not set
+  function Utt(t) { this.text = t; this.pitch = 1; this.rate = 1; this.onstart = null; this.onend = null; }
+  window.__ttsEvent = function (id, type) {
+    var u = utts[id]; if (!u) return;
+    if (type === 'start' && u.onstart) u.onstart();
+    if (type === 'end') { delete utts[id]; if (u.onend) u.onend(); }
+  };
+  var synth = {
+    speak: function (u) { var id = 't' + (++n); utts[id] = u; UltronNative.tts(id, String(u.text), u.pitch || 1, u.rate || 1); },
+    cancel: function () { UltronNative.ttsStop(); utts = {}; }, speaking: false, pending: false
+  };
+  try { Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utt, configurable: true, writable: true }); } catch (e) { window.SpeechSynthesisUtterance = Utt; }
+  try { Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true }); } catch (e) {}
+})();</script><title>ULTRON+</title></head><body class="scroll">
+<div class="box wide">
+<h1>ULTRON+</h1>
+<p class="sub"><span class="dot"></span>BRIEFING · ROUTINES · AGENDA · PC LINK</p>
+
+<h2>DAILY BRIEFING</h2>
+<div class="row"><div><b>Morning briefing</b><small>Every day ULTRON prepares who messaged, missed calls, emails, calendar and reminders. Tap ▶ LISTEN on the notification to hear it.</small></div><label class="switch"><input type="checkbox" id="briefOn"><span></span></label></div>
+<label for="briefTime">TIME</label><input id="briefTime" type="time">
+<label for="homeCity">HOME CITY (FOR YOUR WEATHER)</label><input id="homeCity" type="text" placeholder="Lucknow">
+<button id="saveBrief">SAVE</button>
+<button class="ghost" id="briefNow">HEAR A BRIEFING NOW</button>
+<div class="note" id="lastBrief"></div>
+
+<h2>ROUTINES</h2>
+<div class="note" id="routineNow"></div>
+<div id="routines"></div>
+<button class="ghost" id="stopRoutine">STOP THE CURRENT ROUTINE</button>
+
+<h2>TODAY</h2>
+<div id="today"></div>
+<h2>REMINDERS</h2>
+<div id="reminders"></div>
+<div class="note">Say "remind me to call mom tomorrow at 6 pm". When a chat mentions a time ("call me at 5", "meeting on Monday"), ULTRON asks you with ADD / NO.</div>
+<h2>EMAILS (LAST 48 H)</h2>
+<div id="mails"></div>
+<div class="note">ULTRON reads email notifications and includes them in your briefing. It never replies to emails by itself.</div>
+
+<h2>PHONE + PC</h2>
+<div id="pcState" class="note"></div>
+<label for="pcAddr">PC ADDRESS</label><input id="pcAddr" type="text" placeholder="192.168.1.10:8765">
+<label for="pcCode">PAIRING CODE (SAY "PAIR PHONE" TO ULTRON ON THE PC)</label><input id="pcCode" type="text" inputmode="numeric" maxlength="6">
+<button id="pair">PAIR WITH PC</button>
+<button class="ghost" id="sync">SYNC NOW</button>
+<div class="row"><div><b>PC link on</b><small>On the home Wi-Fi, the PC can ask for phone notifications and SMS, open apps, and share memories. Calls and SMS from the PC always need your APPROVE on the phone.</small></div><label class="switch"><input type="checkbox" id="pcOn"><span></span></label></div>
+<button class="ghost" id="unpair">UNPAIR</button>
+
+<h2>ADVANCED</h2>
+<label>VOICE LANGUAGE</label>
+<div class="modes" id="vlang"><button data-l="auto">ENGLISH + HINDI</button><button data-l="en">ENGLISH</button><button data-l="hi">हिंदी</button></div>
+<div class="note">Conversation mode: say "let's talk" and keep talking without tapping; tap the face to interrupt ULTRON; say "bye" to stop.</div>
+
+<label>STUDY BRAIN</label>
+<div id="docs"></div>
+<button id="addDoc">ADD NOTES OR PDF</button>
+<div class="note">Then ask: "explain chapter 3 from my notes", "make 10 questions from my notes", "quiz me from my notes".</div>
+
+<label>SECURITY</label>
+<div class="row"><div><b>SIM change alert</b><small>If a different SIM is put in, ULTRON texts your alert number with the location</small></div><label class="switch"><input type="checkbox" id="theft"><span></span></label></div>
+<div class="row"><div><b>Power-off alert</b><small>If the phone is switched off while locked, a last text with its location</small></div><label class="switch"><input type="checkbox" id="theftPower"><span></span></label></div>
+<label>APP LOCK (FINGERPRINT OR ULTRON PASSWORD; 2 WRONG = INTRUDER PHOTO)</label>
+<div id="lockApps"></div>
+<div id="intruders"></div>
+<button id="saveAdv">SAVE</button>
+
+<h2>SELF-LEARNING</h2>
+<div class="note" id="learnSummary"></div>
+<div class="row"><div><b>Learn by itself</b><small>Every night at 3:30 AM ULTRON reviews the day: your corrections, edited or rejected drafts, commands it misunderstood, topics you asked about. It writes lessons, learns your phrases and new topics. Safety rules never change.</small></div><label class="switch"><input type="checkbox" id="learnOn"><span></span></label></div>
+<div class="row"><div><b>Update itself</b><small>When a newer ULTRON is on your PC, the phone downloads it on home Wi-Fi and asks you to install</small></div><label class="switch"><input type="checkbox" id="autoUpdate"><span></span></label></div>
+<div class="note" id="updateStatus"></div>
+<button id="saveLearn">SAVE</button>
+<button class="ghost" id="learnNow">LEARN FROM TODAY NOW</button>
+<button class="ghost" id="updateNow">CHECK FOR UPDATE</button>
+<label>BRAIN SPEED (FASTEST IS ASKED FIRST)</label><div id="speed"></div>
+<label>LESSONS</label><div id="lessons"></div>
+<label>YOUR PHRASES ULTRON LEARNED</label><div id="shortcuts"></div>
+<label>TOPICS ULTRON LEARNED</label><div id="topics"></div>
+
+<h2>EVERYDAY</h2>
+<div class="row"><div><b>Auto-silent from calendar</b><small>Meetings, classes, interviews and exams on your calendar switch on Meeting mode, and off when they end</small></div><label class="switch"><input type="checkbox" id="calSilent"><span></span></label></div>
+<div class="row"><div><b>News in the briefing</b><small>Top 3 headlines in your morning briefing</small></div><label class="switch"><input type="checkbox" id="news"><span></span></label></div>
+<label for="wakeTime">WAKE-UP ALARM (ALARM, THEN WEATHER AND BRIEFING)</label><input id="wakeTime" type="time">
+<div class="row"><div><b>Every day</b></div><label class="switch"><input type="checkbox" id="wakeDaily"><span></span></label></div>
+<label for="findWord">FIND MY PHONE SECRET WORD</label><input id="findWord" type="password" placeholder="at least 4 letters, keep it private">
+<div class="note" id="findNote">If anyone texts this exact word to your phone (SMS or WhatsApp), ULTRON rings loudly even on silent for 1 minute and replies with the phone's location. Leave empty to switch it off.</div>
+<div class="note" id="aliases"></div>
+<div id="lists"></div>
+<button id="saveDaily">SAVE</button>
+
+<h2>SMART FEATURES</h2>
+<div class="note" id="smartStats"></div>
+<div class="row"><div><b>Helpful nudges</b><small>Someone waiting over an hour, low battery before a meeting or at night, rain today, birthdays</small></div><label class="switch"><input type="checkbox" id="nudges"><span></span></label></div>
+<div class="row"><div><b>Water reminders</b><small>Every 2 hours, 9 AM to 10 PM (not during sleep, meetings or quiet hours)</small></div><label class="switch"><input type="checkbox" id="water"><span></span></label></div>
+<div class="row"><div><b>Stretch reminders</b><small>Every 2 hours, 10 AM to 9 PM</small></div><label class="switch"><input type="checkbox" id="stretch"><span></span></label></div>
+<div class="row"><div><b>Scam alerts</b><small>Fake bank, KYC, lottery, job and parcel messages are flagged and never answered</small></div><label class="switch"><input type="checkbox" id="scam"><span></span></label></div>
+<div class="row"><div><b>Money tracker</b><small>Amounts from bank and UPI alerts only (no balances, no account numbers). Ask "how much did I spend this week?"</small></div><label class="switch"><input type="checkbox" id="money"><span></span></label></div>
+<div class="row"><div><b>Weekly report</b><small>Every Sunday at 8 PM: your week in one spoken summary</small></div><label class="switch"><input type="checkbox" id="weekly"><span></span></label></div>
+<button id="saveSmart">SAVE</button>
+
+<h2>VOICE &amp; SECURITY</h2>
+<div class="row"><div><b>"Hey ULTRON" wake word</b><small>While ULTRON's screen is open, it waits for its name. Tip: set ULTRON as the phone's assistant (Settings › Apps › Choose default apps › Digital assistant app) and long-press the side key to talk to ULTRON from anywhere.</small></div><label class="switch"><input type="checkbox" id="wake"><span></span></label></div>
+<div class="row"><div><b>Fingerprint unlock</b><small id="bioNote">Open ULTRON with your fingerprint or phone PIN instead of the password.</small></div><label class="switch"><input type="checkbox" id="bio"><span></span></label></div>
+<button id="saveVoice">SAVE</button>
+<div id="msg"></div>
+<button class="ghost" onclick="location.href='/'">BACK</button>
+</div>
+<script>
+function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function call(p,b){return fetch('https://ultron.app'+p,{method:'POST',body:JSON.stringify(b||{})}).then(function(r){return r.json();});}
+function msg(t){document.getElementById('msg').textContent=t;}
+function when(ms){var d=new Date(ms);return d.toLocaleString([], {weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});}
+var RN={sleep:'😴 SLEEP',driving:'🚗 DRIVING',meeting:'💼 MEETING',study:'📚 STUDY'};
+function show(d){
+  var a=d.agenda;
+  document.getElementById('briefOn').checked=a.briefOn;
+  document.getElementById('briefTime').value=a.briefTime.length===4?'0'+a.briefTime:a.briefTime;
+  document.getElementById('homeCity').value=a.homeCity||'';
+  document.getElementById('lastBrief').textContent=a.lastBrief?('Last briefing: '+a.lastBrief):'';
+  var r=d.routines;
+  document.getElementById('routineNow').textContent=r.active?('ON NOW: '+RN[r.active]+' · people are told: '+r.status):'No routine running.';
+  document.getElementById('routines').innerHTML=r.routines.map(function(x){
+    return '<div class="item" data-r="'+esc(x.name)+'"><b>'+esc(RN[x.name]||x.name)+'</b>'+(r.active===x.name?' <span class="ok">ON</span>':'')+
+      '<label>WHAT ULTRON TELLS PEOPLE</label><input data-k="status" value="'+esc(x.status)+'">'+
+      '<div class="row"><div><b>Do Not Disturb</b></div><label class="switch"><input type="checkbox" data-k="dnd"'+(x.dnd?' checked':'')+'><span></span></label></div>'+
+      '<div class="row"><div><b>Read messages aloud</b></div><label class="switch"><input type="checkbox" data-k="readAloud"'+(x.readAloud?' checked':'')+'><span></span></label></div>'+
+      '<label>SOUND</label><select data-k="ringer">'+['keep','vibrate','normal'].map(function(o){return '<option'+(o===x.ringer?' selected':'')+'>'+o+'</option>';}).join('')+'</select>'+
+      '<label>REPLIES DURING THIS ROUTINE</label><select data-k="reply">'+['auto','approve','manual','keep'].map(function(o){return '<option'+(o===x.reply?' selected':'')+'>'+o+'</option>';}).join('')+'</select>'+
+      '<div class="row"><div><b>Every day automatically</b></div><label class="switch"><input type="checkbox" data-k="scheduled"'+(x.scheduled?' checked':'')+'><span></span></label></div>'+
+      '<div class="btns"><input type="time" data-k="from" value="'+esc(x.from||'23:00')+'"> → <input type="time" data-k="to" value="'+esc(x.to||'07:00')+'"></div>'+
+      '<div class="btns"><button class="ghost" data-save>SAVE</button><button data-start>START</button></div></div>';
+  }).join('');
+  document.querySelectorAll('[data-r]').forEach(function(card){
+    var name=card.getAttribute('data-r');
+    function cfg(){var o={name:name};card.querySelectorAll('[data-k]').forEach(function(i){var k=i.getAttribute('data-k');o[k]=i.type==='checkbox'?i.checked:i.value;});return o;}
+    card.querySelector('[data-save]').onclick=function(){call('/plussave',{routine:cfg()}).then(function(){msg(RN[name]+' saved.');load();});};
+    card.querySelector('[data-start]').onclick=function(){call('/plussave',{routine:cfg()}).then(function(){return call('/routine',{name:name});}).then(function(j){msg(j.result);load();});};
+  });
+  document.getElementById('today').innerHTML=a.today.length?a.today.map(function(e){return '<div class="item"><i>'+esc(e.allDay?'All day':when(e.begin))+'</i><br>'+esc(e.title)+(e.where?' · '+esc(e.where):'')+'</div>';}).join(''):'<div class="note">'+(d.calendar?'Nothing on the calendar in the next 24 hours.':'Allow the calendar permission to see your events.')+'</div>';
+  document.getElementById('reminders').innerHTML=a.reminders.length?a.reminders.map(function(e){return '<div class="item"><i>'+esc(when(e.when))+'</i><br>'+esc(e.what)+(e.from?' · from '+esc(e.from):'')+'</div>';}).join(''):'<div class="note">No reminders coming up.</div>';
+  document.getElementById('mails').innerHTML=a.mails.length?a.mails.slice().reverse().slice(0,20).map(function(e){return '<div class="item"><i>'+esc(when(e.at))+' · '+esc(e.app)+(e.important?' · <span class="no">IMPORTANT</span>':'')+'</i><br><b>'+esc(e.from)+'</b>: '+esc(e.text)+'</div>';}).join(''):'<div class="note">No emails seen yet.</div>';
+  var p=d.pc;
+  document.getElementById('pcAddr').value=p.addr;
+  document.getElementById('pcOn').checked=p.on;
+  document.getElementById('pcState').innerHTML=p.paired?('PAIRED · '+(p.online?'<span class="ok">CONNECTED</span>':'<span class="no">NOT CONNECTED</span>')+(p.error?' · '+esc(p.error):'')+(p.lastSync?' · last sync '+esc(when(+p.lastSync)):'')):'Not paired yet.';
+  document.getElementById('wake').checked=d.wake;
+  document.getElementById('bio').checked=d.bio;
+  document.getElementById('bio').disabled=!d.bioPossible;
+  if(!d.bioPossible)document.getElementById('bioNote').textContent='Set a fingerprint or PIN lock on the phone first.';
+}
+function showSmart(m){
+  if(!m)return;
+  ['nudges','water','stretch','scam','money','weekly'].forEach(function(k){document.getElementById(k).checked=!!m[k];});
+  document.getElementById('smartStats').textContent='Learned from '+m.styleExamples+' of your own messages and edits · knows '+m.people+' people · '+m.archived+' messages searchable'+(m.sleepLast?' · '+m.sleepLast:'');
+}
+function showDaily(m){
+  if(!m)return;
+  ['calSilent','news','wakeDaily'].forEach(function(k){document.getElementById(k).checked=!!m[k];});
+  document.getElementById('wakeTime').value=m.wakeTime||'';
+  document.getElementById('findWord').placeholder=m.findWord?'set (type a new word to change)':'at least 4 letters, keep it private';
+  var al=Object.keys(m.aliases||{});
+  document.getElementById('aliases').textContent=al.length?('Names: '+al.map(function(k){return k+' = '+m.aliases[k];}).join(' · ')):'Tip: say "my mummy is Ayesha Khan" so "call mummy" works.';
+  document.getElementById('lists').innerHTML=(m.lists||[]).map(function(l){return '<div class="item"><b>'+esc(l.name.toUpperCase())+' LIST</b><br>'+(l.items.length?l.items.map(esc).join(' · '):'(empty)')+'</div>';}).join('');
+}
+var NAMES={claude:'Claude',chatgpt:'ChatGPT',gemini:'Gemini',grok:'Grok',groq:'Groq',openrouter:'OpenRouter'};
+function showLearn(m){
+  if(!m)return;
+  document.getElementById('learnOn').checked=!!m.on;
+  document.getElementById('autoUpdate').checked=!!m.autoUpdate;
+  document.getElementById('learnSummary').textContent=m.summary||'ULTRON has not reviewed a day yet. It will tonight, or tap LEARN FROM TODAY NOW.';
+  document.getElementById('updateStatus').textContent=m.update||'';
+  var sp=(m.speed||[]).slice().sort(function(a,b){return a.ms-b.ms;});
+  document.getElementById('speed').innerHTML=sp.length?sp.map(function(x,i){return '<div class="item"><b>'+(i+1)+'. '+esc(NAMES[x.brain]||x.brain)+'</b> · '+(x.ms/1000).toFixed(1)+' s · '+x.ok+' answers, '+x.fail+' failures'+(x.resting?' · <span class="no">RESTING</span>':'')+'</div>';}).join(''):'<div class="note">No answers measured yet.</div>';
+  function rows(id,arr,txt,key){document.getElementById(id).innerHTML=arr.length?arr.map(function(x,i){return '<div class="item">'+txt(x)+' <button class="ghost" style="width:auto;padding:2px 10px;margin:4px 0 0" data-forget="'+key+'" data-i="'+i+'">FORGET</button></div>';}).join(''):'<div class="note">Nothing yet.</div>';}
+  rows('lessons',m.lessons||[],function(x){return esc(x.t);},'forgetLesson');
+  rows('shortcuts',m.shortcuts||[],function(x){return '"'+esc(x.say)+'" → '+esc(x.means);},'forgetShortcut');
+  rows('topics',m.knowledge||[],function(x){return '<b>'+esc(x.topic)+'</b>';},'forgetTopic');
+  document.querySelectorAll('[data-forget]').forEach(function(b){b.onclick=function(){var o={};o[b.getAttribute('data-forget')]=+b.getAttribute('data-i');call('/plussave',o).then(function(){msg('Forgotten.');load();});};});
+}
+var LOCKABLE=[['com.whatsapp','WhatsApp'],['com.instagram.android','Instagram'],['com.snapchat.android','Snapchat'],['org.telegram.messenger','Telegram'],['com.sec.android.gallery3d','Gallery'],['com.google.android.apps.photos','Google Photos'],['com.samsung.android.messaging','Messages'],['com.sec.android.app.myfiles','My Files'],['com.google.android.gm','Gmail'],['com.android.chrome','Chrome']];
+var vlang='auto';
+function markLang(){document.querySelectorAll('#vlang button').forEach(function(b){b.className=b.getAttribute('data-l')===vlang?'on':'';});}
+document.querySelectorAll('#vlang button').forEach(function(b){b.onclick=function(){vlang=b.getAttribute('data-l');markLang();};});
+function showAdv(m,bg){
+  if(!m)return;
+  vlang=m.voiceLang||'auto';markLang();
+  ['theft','theftPower'].forEach(function(k){document.getElementById(k).checked=!!m[k];});
+  document.getElementById('docs').innerHTML=(m.docs||[]).length?m.docs.map(function(x,i){return '<div class="item"><b>'+esc(x.name)+'</b> · '+Math.round(x.chars/1000)+'k characters <button class="ghost" style="width:auto;padding:2px 10px;margin:4px 0 0" data-fd="'+i+'">REMOVE</button></div>';}).join(''):'<div class="note">No notes added yet.</div>';
+  document.querySelectorAll('[data-fd]').forEach(function(b){b.onclick=function(){call('/plussave',{forgetDoc:+b.getAttribute('data-fd')}).then(load);};});
+  var locked=','+(m.lockedApps||'')+',';
+  document.getElementById('lockApps').innerHTML=LOCKABLE.map(function(a){return '<div class="row"><div><b>'+a[1]+'</b></div><label class="switch"><input type="checkbox" data-lock="'+a[0]+'"'+(locked.indexOf(','+a[0]+',')>=0?' checked':'')+'><span></span></label></div>';}).join('');
+  document.getElementById('intruders').innerHTML=(m.intruders||[]).slice().reverse().map(function(x){return '<div class="item"><span class="no">INTRUDER</span> · '+esc(when(x.at))+' · '+esc(x.why)+'<br><img src="/intruder/'+esc(x.file)+'" style="width:120px;margin-top:6px;border:1px solid #333"></div>';}).join('');
+}
+function load(){call('/plusinfo').then(function(d){show(d);showSmart(d.smart);showDaily(d.daily);showLearn(d.learn);showAdv(d.adv);});}
+document.getElementById('addDoc').onclick=function(){msg('Choose a PDF, photo of notes, or text file. Reading it can take a minute...');call('/docpick').then(function(j){msg(j.result);load();});};
+document.getElementById('saveAdv').onclick=function(){var apps=[];document.querySelectorAll('[data-lock]').forEach(function(c){if(c.checked)apps.push(c.getAttribute('data-lock'));});
+  call('/plussave',{voiceLang:vlang,theft:document.getElementById('theft').checked,theftPower:document.getElementById('theftPower').checked,lockedApps:apps.join(',')}).then(function(){msg('Saved.'+(apps.length?' App lock needs the screen helper (Accessibility) on.':''));load();});};
+document.getElementById('saveLearn').onclick=function(){call('/plussave',{learnOn:document.getElementById('learnOn').checked,autoUpdate:document.getElementById('autoUpdate').checked}).then(function(){msg('Saved.');});};
+document.getElementById('learnNow').onclick=function(){msg('Reviewing today...');call('/plussave',{learnNow:true}).then(function(j){msg(j.result||'Done.');load();});};
+document.getElementById('updateNow').onclick=function(){call('/plussave',{updateNow:true}).then(function(j){msg(j.result);setTimeout(load,8000);});};
+document.getElementById('saveDaily').onclick=function(){var o={wakeTime:document.getElementById('wakeTime').value};['calSilent','news','wakeDaily'].forEach(function(k){o[k]=document.getElementById(k).checked;});var w=document.getElementById('findWord').value.trim();if(w){if(w.length<4){msg('Secret word needs at least 4 letters.');return;}o.findWord=w;}call('/plussave',o).then(function(){document.getElementById('findWord').value='';msg('Saved.');load();});};
+document.getElementById('saveSmart').onclick=function(){var o={};['nudges','water','stretch','scam','money','weekly'].forEach(function(k){o[k]=document.getElementById(k).checked;});call('/plussave',o).then(function(){msg('Smart features saved.');});};
+document.getElementById('saveBrief').onclick=function(){call('/plussave',{briefOn:document.getElementById('briefOn').checked,briefTime:document.getElementById('briefTime').value,homeCity:document.getElementById('homeCity').value}).then(function(){msg('Briefing saved.');});};
+document.getElementById('briefNow').onclick=function(){msg('Preparing your briefing...');call('/briefing');};
+document.getElementById('stopRoutine').onclick=function(){call('/routine',{name:''}).then(function(j){msg(j.result);load();});};
+document.getElementById('pair').onclick=function(){msg('Pairing...');call('/pcpair',{addr:document.getElementById('pcAddr').value,code:document.getElementById('pcCode').value}).then(function(j){msg(j.result);load();});};
+document.getElementById('sync').onclick=function(){msg('Syncing...');call('/pcsync').then(function(j){msg(j.result);load();});};
+document.getElementById('unpair').onclick=function(){call('/pcunpair').then(function(j){msg(j.result);load();});};
+document.getElementById('pcOn').onchange=function(){call('/plussave',{pcOn:this.checked,pcAddr:document.getElementById('pcAddr').value});};
+document.getElementById('saveVoice').onclick=function(){call('/plussave',{wake:document.getElementById('wake').checked,bio:document.getElementById('bio').checked}).then(function(){msg('Saved.');});};
+load();
+</script></body></html>
