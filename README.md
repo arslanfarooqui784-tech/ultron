@@ -1,4 +1,13 @@
-<p align="center"><img src="android/assets/icon.png" width="120" alt="ULTRON icon"></p>
+<p align="center"><img src="docs/banner.svg" width="100%" alt="banner"></p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android_%2B_Windows-5ef0ff?style=for-the-badge&labelColor=03050b&logo=android&logoColor=white">
+  <img src="https://img.shields.io/badge/Java-11k_LOC-ff4fd8?style=for-the-badge&labelColor=03050b&logo=openjdk&logoColor=white">
+  <img src="https://img.shields.io/badge/Python-PC_server-9b7bff?style=for-the-badge&labelColor=03050b&logo=python&logoColor=white">
+  <img src="https://img.shields.io/badge/LLMs-Gemini_%C2%B7_Claude_%C2%B7_GPT_%C2%B7_Grok_%C2%B7_Groq-5ef0ff?style=for-the-badge&labelColor=03050b">
+  <img src="https://img.shields.io/badge/Safety-3--tier_human--in--the--loop-ff4fd8?style=for-the-badge&labelColor=03050b">
+  <img src="https://img.shields.io/badge/Release-v9.4-9b7bff?style=for-the-badge&labelColor=03050b">
+</p>
 
 # ULTRON — Cross-Platform Personal AI Agent
 
